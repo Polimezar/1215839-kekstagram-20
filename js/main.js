@@ -8,9 +8,8 @@ var COMMENTS = [
   'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
   'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
 ];
-var USERS = ['Аделина', 'Елена', 'Дмитрий', 'Екатерина', 'Александр', 'Юлия', 'Владислав'];
-var postsAmount = 25;
-
+var USERNAMES = ['Аделина', 'Елена', 'Дмитрий', 'Екатерина', 'Александр', 'Юлия', 'Владислав'];
+var POSTSCOUNT = 25;
 var pictureTemplate = document.querySelector('#picture')
   .content
   .querySelector('.picture');
@@ -28,7 +27,7 @@ var createComment = function () {
   return {
     avatar: 'img/avatar-' + getRandomNumber(1, 6) + '.svg',
     message: COMMENTS[getRandomNumber(0, COMMENTS.length - 1)],
-    name: USERS[getRandomNumber(0, USERS.length - 1)]
+    name: USERNAMES[getRandomNumber(0, USERNAMES.length - 1)]
   };
 };
 
@@ -53,30 +52,29 @@ var createPost = function (index) {
 
 // Функция для создания  25 постов
 var createPosts = function () {
-  var Posts = [];
-  for (var i = 0; i < postsAmount; i++) {
-    Posts.push(createPost(i));
+  posts = [];
+  for (var i = 0; i < POSTSCOUNT; i++) {
+    posts.push(createPost(i));
   }
-  return Posts;
 };
 
 // Создание DOM элементов
 var createPostElement = function (post) {
   var clonedPost = pictureTemplate.cloneNode(true);
   clonedPost.querySelector('.picture__img').src = post.url;
-  clonedPost.querySelector('.picture__likes').textContent = post.likes;
-  clonedPost.querySelector('.picture__comments').innerHTML = post.comment.length;
+  clonedPost.querySelector('.picture__likes') .textContent = post.likes;
+  clonedPost.querySelector('.picture__comments') .innerHTML = post.comments.length;
   return clonedPost;
 };
 
 // Отрисовка DOM элемента на странице
 var createPostElements = function () {
   var fragment = document.createDocumentFragment();
-  for (var j = 0; j < postsAmount; j++) {
+  for (var j = 0; j < POSTSCOUNT; j++) {
     fragment.appendChild(createPostElement(posts[j]));
   }
   picturesContainer.appendChild(fragment);
 };
 
-createPostElements();
 createPosts();
+createPostElements();
