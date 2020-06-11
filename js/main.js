@@ -17,7 +17,8 @@ var pictureTemplate = document.querySelector('#picture')
 var picturesContainer = document.querySelector('.pictures');
 var posts = [];
 var bigPicture = document.querySelector('.big-picture');
-
+var commentsContainer = document.querySelector('.social__comments')
+var commentTemplate = document.querySelector('#comment');
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -82,40 +83,50 @@ createPosts();
 createPostElements();
 
 // Заполнение bigPicture информацией из первого элемента массива
-bigPicture.classList.remove('hidden');
+var showBigPicture = function () {
+  bigPicture.classList.remove('hidden');
+  document.querySelector('body').classList.add('modal-open');
+};
+
+showBigPicture();
+
 bigPicture.querySelector('.big-picture__img').src = posts[0].url;
 bigPicture.querySelector('.likes-count').textContent = posts[0].likes;
 bigPicture.querySelector('.comments-count').textContent = posts[0].comments.length;
 bigPicture.querySelector('.social__caption').textContent = posts[0].description;
 
 // Функция удаляет комментарии по умолчанию из разметки
-var destroyedComments = function () {
-  var defaultComments = document.querySelectorAll('.social__comment');
-  for (var k = 0; k < defaultComments.length; k++) {
-    defaultComments[k].remove();
+var  clearComments = function () {
+  while (commentsContainer.firstChild) {
+    commentsContainer.removeChild(commentsContainer.firstChild);
   }
 };
 
 // Функция для вставки сгенерированных комментариев в DOM
-var showComments = function () {
-  var fragmentOfComments = document.createDocumentFragment();
+var createCommentElement = function () {
   for (var l = 0; l < posts[0].comments.length; l++) {
-    var clonedComment = bigPicture.querySelector('.social__comment').cloneNode(true);
+    var clonedComment = commentTemplate.cloneNode(true);
     clonedComment.querySelector('img').src = posts[0].comments[l].avatar;
     clonedComment.querySelector('img').alt = posts[0].comments[l].name;
     clonedComment.querySelector('.social__text').textContent = posts[0].comments[l].message;
-    fragmentOfComments.appendChild(clonedComment);
   }
-  destroyedComments(); // Подчищаем комменты с разметки
-  document.querySelector('.social__comments').appendChild(fragmentOfComments); // Вставляем сгенерированные на страницу
 };
 
-showComments();
+var createCommentElements = function (post) {
+  var fragmentOfComments = document.createDocumentFragment();
+  for (var l = 0; l < posts[0].comments.length; l++) {
+    fragmentOfComments.appendChild(clonedComment);
+  }
+  clearComments();
+  commentsContainer.appendChild(fragmentOfComments);
+};
 
 // Прячем блоки счётчика комментариев и загрузки новых комментариев
-document.querySelector('.social__comment-count').classList.add('hidden');
-document.querySelector('.comments-loader').classList.add('hidden');
+var hideCommentCounter = function () {
+  document.querySelector('.social__comment-count').classList.add('hidden');
+  document.querySelector('.comments-loader').classList.add('hidden');
+};
 
-// Чтобы контейнер с фотографиями позади не прокручивался при скролле.
-document.querySelector('body').classList.add('modal-open');
-
+hideCommentCounter();
+createPostElement();
+createPostElements(post[0]);
