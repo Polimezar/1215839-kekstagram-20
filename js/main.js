@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 'use strict';
 
 var COMMENTS = [
@@ -17,8 +19,12 @@ var pictureTemplate = document.querySelector('#picture')
 var picturesContainer = document.querySelector('.pictures');
 var posts = [];
 var bigPicture = document.querySelector('.big-picture');
-var commentsContainer = document.querySelector('.social__comments')
-var commentTemplate = document.querySelector('#comment');
+var commentTemplate = document.querySelector('#comment')
+  .content
+  .querySelector('.social__comment');
+
+var commentsContainer = document.querySelector('.social__comments');
+
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -47,7 +53,7 @@ var createComments = function () {
 var createPost = function (index) {
   return {
     url: 'photos/' + (index + 1) + '.jpg',
-    description: 'Описание под фото',
+    description: 'И пусть весь мир подождет',
     likes: getRandomNumber(15, 200),
     comments: createComments(),
   };
@@ -60,6 +66,8 @@ var createPosts = function () {
     posts.push(createPost(i));
   }
 };
+
+createPosts();
 
 // Создание DOM элементов
 var createPostElement = function (post) {
@@ -79,54 +87,58 @@ var createPostElements = function () {
   picturesContainer.appendChild(fragment);
 };
 
-createPosts();
-createPostElements();
-
 // Заполнение bigPicture информацией из первого элемента массива
 var showBigPicture = function () {
   bigPicture.classList.remove('hidden');
   document.querySelector('body').classList.add('modal-open');
 };
 
-showBigPicture();
-
-bigPicture.querySelector('.big-picture__img').src = posts[0].url;
-bigPicture.querySelector('.likes-count').textContent = posts[0].likes;
-bigPicture.querySelector('.comments-count').textContent = posts[0].comments.length;
-bigPicture.querySelector('.social__caption').textContent = posts[0].description;
-
 // Функция удаляет комментарии по умолчанию из разметки
-var  clearComments = function () {
+var clearComments = function () {
   while (commentsContainer.firstChild) {
     commentsContainer.removeChild(commentsContainer.firstChild);
   }
 };
 
-// Функция для вставки сгенерированных комментариев в DOM
-var createCommentElement = function () {
-  for (var l = 0; l < posts[0].comments.length; l++) {
-    var clonedComment = commentTemplate.cloneNode(true);
-    clonedComment.querySelector('img').src = posts[0].comments[l].avatar;
-    clonedComment.querySelector('img').alt = posts[0].comments[l].name;
-    clonedComment.querySelector('.social__text').textContent = posts[0].comments[l].message;
-  }
+var createCommentElement = function (comment) {
+  var clonedComment = commentTemplate.cloneNode(true);
+  clonedComment.querySelector('img').src = comment.avatar;
+  clonedComment.querySelector('img').alt = comment.name;
+  clonedComment.querySelector('.social__text').textContent = comment.message;
+  return clonedComment;
 };
 
-var createCommentElements = function (post) {
+// Функция для вставки сгенерированных комментариев в DOM
+var createCommentElements = function (comments) {
   var fragmentOfComments = document.createDocumentFragment();
-  for (var l = 0; l < posts[0].comments.length; l++) {
-    fragmentOfComments.appendChild(clonedComment);
+  for (var i = 0; i < comments.length; i++) {
+    fragmentOfComments.appendChild(createCommentElement(comments[i]));
   }
-  clearComments();
-  commentsContainer.appendChild(fragmentOfComments);
+  clearComments(); // Подчищаем комменты с разметки
+  commentsContainer.appendChild(fragmentOfComments); // Вставляем сгенерированные на страницу
+};
+
+var comments = createComments(POSTS_COUNT);
+
+var setupBigPicture = function (post) {
+  bigPicture.querySelector('.big-picture__img').src = posts[0].url;
+  bigPicture.querySelector('.likes-count').textContent = posts[0].likes;
+  bigPicture.querySelector('.comments-count') .textContent = posts[0].comments.length;
+  bigPicture.querySelector('.social__caption') .textContent = posts[0].description;
 };
 
 // Прячем блоки счётчика комментариев и загрузки новых комментариев
 var hideCommentCounter = function () {
   document.querySelector('.social__comment-count').classList.add('hidden');
+};
+
+var hideCommentLoader = function () {
   document.querySelector('.comments-loader').classList.add('hidden');
 };
 
+createPostElements();
 hideCommentCounter();
-createPostElement();
-createPostElements(post[0]);
+hideCommentLoader();
+showBigPicture();
+createCommentElements(comments);
+setupBigPicture();
