@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 'use strict';
 
 var COMMENTS = [
@@ -24,7 +22,6 @@ var commentTemplate = document.querySelector('#comment')
   .querySelector('.social__comment');
 
 var commentsContainer = document.querySelector('.social__comments');
-
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -67,8 +64,6 @@ var createPosts = function () {
   }
 };
 
-createPosts();
-
 // Создание DOM элементов
 var createPostElement = function (post) {
   var clonedPost = pictureTemplate.cloneNode(true);
@@ -101,30 +96,29 @@ var clearComments = function () {
 };
 
 var createCommentElement = function (comment) {
-  var clonedComment = commentTemplate.cloneNode(true);
-  clonedComment.querySelector('img').src = comment.avatar;
-  clonedComment.querySelector('img').alt = comment.name;
-  clonedComment.querySelector('.social__text').textContent = comment.message;
-  return clonedComment;
+  var commentElement = commentTemplate.cloneNode(true);
+  commentElement.querySelector('img').src = comment.avatar;
+  commentElement.querySelector('img').alt = comment.name;
+  commentElement.querySelector('.social__text').textContent = comment.message;
+  return commentElement;
 };
 
 // Функция для вставки сгенерированных комментариев в DOM
 var createCommentElements = function (comments) {
-  var fragmentOfComments = document.createDocumentFragment();
+  var fragment = document.createDocumentFragment();
   for (var i = 0; i < comments.length; i++) {
-    fragmentOfComments.appendChild(createCommentElement(comments[i]));
+    fragment.appendChild(createCommentElement(comments[i]));
   }
   clearComments(); // Подчищаем комменты с разметки
-  commentsContainer.appendChild(fragmentOfComments); // Вставляем сгенерированные на страницу
+  commentsContainer.appendChild(fragment); // Вставляем сгенерированные на страницу
 };
 
-var comments = createComments(POSTS_COUNT);
-
 var setupBigPicture = function (post) {
-  bigPicture.querySelector('.big-picture__img').src = posts[0].url;
-  bigPicture.querySelector('.likes-count').textContent = posts[0].likes;
-  bigPicture.querySelector('.comments-count') .textContent = posts[0].comments.length;
-  bigPicture.querySelector('.social__caption') .textContent = posts[0].description;
+  bigPicture.querySelector('.big-picture__img').src = post.url;
+  bigPicture.querySelector('.likes-count').textContent = post.likes;
+  bigPicture.querySelector('.comments-count') .textContent = post.comments.length;
+  bigPicture.querySelector('.social__caption') .textContent = post.description;
+  createCommentElements(post.comments);
 };
 
 // Прячем блоки счётчика комментариев и загрузки новых комментариев
@@ -136,9 +130,9 @@ var hideCommentLoader = function () {
   document.querySelector('.comments-loader').classList.add('hidden');
 };
 
+createPosts();
 createPostElements();
 hideCommentCounter();
 hideCommentLoader();
+setupBigPicture(posts[0]);
 showBigPicture();
-createCommentElements(comments);
-setupBigPicture();
