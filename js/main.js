@@ -158,7 +158,8 @@ var hideCommentLoader = function () {
 var openEditor = function () {
   body.classList.add('modal-open');
   imgUploadOverlay.classList.remove('hidden');
-  document.addEventListener('keydown', escClosing);
+  document.addEventListener('keydown', onEditorCloseEsc);
+  resetScale();
 };
 
 // Закрывает форму редактирования картинки
@@ -166,13 +167,13 @@ var closeEditor = function () {
   body.classList.remove('modal-open');
   imgUploadOverlay.classList.add('hidden');
   imgUploadPreview.className = '';
-  uploadFile.value = '';
-  document.removeEventListener('keydown', escClosing);
+  imgUploadPreview.style.transform = '';
+  document.removeEventListener('keydown', onEditorCloseEsc);
   hideElement(slider);
 };
 
 // Закрытие формы через клавишу ESC
-var escClosing = function (evt) {
+var onEditorCloseEsc = function (evt) {
   if (evt.key === 'Escape') {
     closeEditor();
   }
@@ -185,8 +186,8 @@ var scalePicture = function (value) {
 };
 
 // размер фотографии по умолчанию
-var setScaleValue = function () {
-  scaleControlValue.setAttribute('value', '100%');
+var resetScale = function () {
+  scaleControlValue.value = ('value', '100%');
 };
 
 // Изменение масштаба картинки нажатием -
@@ -278,6 +279,7 @@ uploadFile.addEventListener('change', function () {
 // Закрытие формы редактирования изображения
 uploadCancel.addEventListener('click', function () {
   closeEditor();
+  resetScale();
 });
 
 // Обработчик уменьшения фото
@@ -326,11 +328,11 @@ inputHashtags.addEventListener('input', function () {
 });
 
 inputHashtags.addEventListener('focus', function () {
-  document.removeEventListener('keydown', escClosing);
+  document.removeEventListener('keydown', onEditorCloseEsc);
 });
 
 inputHashtags.addEventListener('blur', function () {
-  document.addEventListener('keydown', escClosing);
+  document.addEventListener('keydown', onEditorCloseEsc);
 });
 
 createPosts();
@@ -339,5 +341,5 @@ hideCommentCounter();
 hideCommentLoader();
 setupBigPicture(posts[0]);
 // showBigPicture();
-setScaleValue();
+resetScale();
 applyEffect();
