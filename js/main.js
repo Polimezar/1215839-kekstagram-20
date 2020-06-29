@@ -10,18 +10,39 @@ var COMMENTS = [
 ];
 var USER_NAMES = ['Аделина', 'Елена', 'Дмитрий', 'Екатерина', 'Александр', 'Юлия', 'Владислав'];
 var POSTS_COUNT = 25;
+var MAX_SCALE_VALUE = 100;
+var MIN_SCALE_VALUE = 25;
+var SCALE_STEP = 25;
+
 var pictureTemplate = document.querySelector('#picture')
   .content
   .querySelector('.picture');
-
 var picturesContainer = document.querySelector('.pictures');
 var posts = [];
 var bigPicture = document.querySelector('.big-picture');
 var commentTemplate = document.querySelector('#comment')
   .content
   .querySelector('.social__comment');
-
 var commentsContainer = document.querySelector('.social__comments');
+var uploadCancel = document.querySelector('#upload-cancel');
+var uploadFile = document.querySelector('#upload-file');
+var imgUploadPreview = document.querySelector('.img-upload__preview');
+var decreaseScaleButton = document.querySelector('.scale__control--smaller');
+var increaseScaleButton = document.querySelector('.scale__control--bigger');
+var scaleControlValue = document.querySelector('.scale__control--value');
+var effectsList = document.querySelector('.effects__list');
+var effectLevel = document.querySelector('.effect-level');
+var effectLevelPin = document.querySelector('.effect-level__pin');
+var effectLevelValue = document.querySelector('.effect-level__value');
+var slider = document.querySelector('.img-upload__effect-level');
+var hashtagRegExp = /^(#[a-zA-Zа-яА-Я0-9]+ +){0,4}(#[a-zA-Zа-яА-Я0-9]+)?$/;
+var inputHashtags = document.querySelector('.text__hashtags');
+var maxHashtagLength = 20;
+var maxHashtagCounts = 5;
+var minHashtagLength = 2;
+var body = document.querySelector('body');
+var imgUploadOverlay = document.querySelector('.img-upload__overlay');
+var selectedEffect = 'none';
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -82,11 +103,13 @@ var createPostElements = function () {
   picturesContainer.appendChild(fragment);
 };
 
+// 3 раздел 2 часть -----------------------------
+
 // Заполнение bigPicture информацией из первого элемента массива
-var showBigPicture = function () {
+/* var showBigPicture = function () {
   bigPicture.classList.remove('hidden');
-  document.querySelector('body').classList.add('modal-open');
-};
+  body.classList.add('modal-open');
+}; */
 
 // Функция удаляет комментарии по умолчанию из разметки
 var clearComments = function () {
@@ -130,9 +153,193 @@ var hideCommentLoader = function () {
   document.querySelector('.comments-loader').classList.add('hidden');
 };
 
+// 4 раздел ----------------------------
+// Открывает форму редактирования картинки
+var openEditor = function () {
+  body.classList.add('modal-open');
+  imgUploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', onEditorCloseEsc);
+  resetScale();
+};
+
+// Закрывает форму редактирования картинки
+var closeEditor = function () {
+  body.classList.remove('modal-open');
+  imgUploadOverlay.classList.add('hidden');
+  imgUploadPreview.className = '';
+  imgUploadPreview.style.transform = '';
+  document.removeEventListener('keydown', onEditorCloseEsc);
+  hideElement(slider);
+};
+
+// Закрытие формы через клавишу ESC
+var onEditorCloseEsc = function (evt) {
+  if (evt.key === 'Escape') {
+    closeEditor();
+  }
+};
+
+// Преобразует число в css свойство scale
+var scalePicture = function (value) {
+  scaleControlValue.value = value + '%';
+  imgUploadPreview.style.transform = 'scale(' + (value * 0.01) + ')';
+};
+
+// размер фотографии по умолчанию
+var resetScale = function () {
+  scaleControlValue.value = ('value', '100%');
+};
+
+// Изменение масштаба картинки нажатием -
+var decreaseScale = function () {
+  var scaleValue = parseInt(scaleControlValue.value, 10);
+  scaleValue -= SCALE_STEP;
+  if (scaleValue < MIN_SCALE_VALUE) {
+    scaleValue = MIN_SCALE_VALUE;
+  }
+  scalePicture(scaleValue);
+};
+
+// Изменение масштаба картинки нажатием +
+var increaseScale = function () {
+  var scaleValue = parseInt(scaleControlValue.value, 10);
+  scaleValue += SCALE_STEP;
+  if (scaleValue > MAX_SCALE_VALUE) {
+    scaleValue = MAX_SCALE_VALUE;
+  }
+  scalePicture(scaleValue);
+};
+
+// Добавляет элементу element класс visually-hidden
+var hideElement = function (element) {
+  element.classList.add('visually-hidden');
+};
+
+// Удаляет у элемента element класс visually-hidden
+var showElement = function (element) {
+  element.classList.remove('visually-hidden');
+};
+
+// Снимает все эффекты с imgUploadPreview
+var removePictureEffects = function () {
+  var effects = ['chrome', 'sepia', 'marvin', 'phobos', 'heat'];
+  for (var i = 0; i < effects.length; i++) {
+    var effectClass = 'effects__preview--' + effects[i];
+    imgUploadPreview.classList.remove(effectClass);
+  }
+};
+
+// Конвертирует проценты в css свойство выбранного эффекта
+var convertPercents = function (percentValue, effectName) {
+  var effectValue = 0;
+  if (effectName === 'chrome') {
+    effectValue = percentValue / 100;
+    return 'grayscale(' + effectValue + ')';
+  } else if (effectName === 'sepia') {
+    effectValue = percentValue / 100;
+    return 'sepia(' + effectValue + ')';
+  } else if (effectName === 'marvin') {
+    effectValue = percentValue + '%';
+    return 'invert(' + effectValue + ')';
+  } else if (effectName === 'phobos') {
+    effectValue = percentValue * 3 / 100;
+    effectValue += 'px';
+    return 'blur(' + effectValue + ')';
+  } else if (effectName === 'heat') {
+    effectValue = percentValue * 2 / 100 + 1;
+    return 'brightness(' + effectValue + ')';
+  }
+  return 'none';
+};
+
+// Управление эфеектами
+var applyEffect = function () {
+  hideElement(effectLevel);
+  effectsList.addEventListener('click', function (evt) {
+    if (evt.target.matches('input[type="radio"]')) {
+      removePictureEffects();
+      imgUploadPreview.style.filter = null;
+      selectedEffect = evt.target.value;
+      effectLevelValue.value = 100;
+      if (selectedEffect !== 'none') {
+        showElement(effectLevel);
+        imgUploadPreview.classList.add('effects__preview--' + selectedEffect);
+      } else {
+        hideElement(effectLevel);
+      }
+    }
+  });
+};
+
+// Открытие формы редактирования изображения
+uploadFile.addEventListener('change', function () {
+  openEditor();
+});
+
+// Закрытие формы редактирования изображения
+uploadCancel.addEventListener('click', function () {
+  closeEditor();
+  resetScale();
+});
+
+// Обработчик уменьшения фото
+decreaseScaleButton.addEventListener('click', function () {
+  decreaseScale();
+});
+
+// Обработчик увеличения фото
+increaseScaleButton.addEventListener('click', function () {
+  increaseScale();
+});
+
+effectLevelPin.addEventListener('mouseup', function () {
+  var effectLevelProportion = (effectLevelPin.offsetLeft + (effectLevelPin.offsetWidth / 2));
+  var saturation = Math.floor(effectLevelProportion / effectLevelPin.offsetParent.offsetWidth * 100);
+  effectLevelValue.value = saturation;
+  imgUploadPreview.style.filter = convertPercents(saturation, selectedEffect);
+});
+
+// Валидация хэштегов
+inputHashtags.addEventListener('input', function () {
+  var textBlock = inputHashtags.value;
+  var lotTextBlock = textBlock.split(/ +/g);
+  var newlotTextBlock = lotTextBlock.filter(function (elem, pos) {
+    return lotTextBlock.indexOf(elem) === pos;
+  });
+  var filterMassTextFill = (newlotTextBlock.length !== lotTextBlock.length);
+  if (filterMassTextFill) {
+    inputHashtags.setCustomValidity('Хештеги не должны повторяться!');
+  } else if (newlotTextBlock.length > maxHashtagCounts) {
+    inputHashtags.setCustomValidity('Максимальное количество хештегов 5шт!');
+  } else if (hashtagRegExp.test(inputHashtags.value)) {
+    inputHashtags.setCustomValidity('');
+  } else {
+    inputHashtags.setCustomValidity('Неправильно набран хеш-тег! Пример: #beaty');
+  }
+  for (var i = 0; i < newlotTextBlock.length; i++) {
+    if (newlotTextBlock[i].length > maxHashtagLength) {
+      inputHashtags.setCustomValidity('Максимальное количество знаков, не должно превышать 20 включая знак #');
+      break;
+    } else if (newlotTextBlock[i].length < minHashtagLength) {
+      inputHashtags.setCustomValidity('Хештег не может состоять из одного "#"');
+    }
+    break;
+  }
+});
+
+inputHashtags.addEventListener('focus', function () {
+  document.removeEventListener('keydown', onEditorCloseEsc);
+});
+
+inputHashtags.addEventListener('blur', function () {
+  document.addEventListener('keydown', onEditorCloseEsc);
+});
+
 createPosts();
 createPostElements();
 hideCommentCounter();
 hideCommentLoader();
 setupBigPicture(posts[0]);
-showBigPicture();
+// showBigPicture();
+resetScale();
+applyEffect();
