@@ -13,6 +13,7 @@ var POSTS_COUNT = 25;
 var MAX_SCALE_VALUE = 100;
 var MIN_SCALE_VALUE = 25;
 var SCALE_STEP = 25;
+var MAX_TEXT_LENGTH = 140;
 
 var pictureTemplate = document.querySelector('#picture')
   .content
@@ -43,6 +44,8 @@ var minHashtagLength = 2;
 var body = document.querySelector('body');
 var imgUploadOverlay = document.querySelector('.img-upload__overlay');
 var selectedEffect = 'none';
+var bigPictureCancel = document.querySelector('.big-picture__cancel');
+var textDescription = document.querySelector('.text__description');
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -91,6 +94,7 @@ var createPostElement = function (post) {
   clonedPost.querySelector('.picture__img').src = post.url;
   clonedPost.querySelector('.picture__likes') .textContent = post.likes;
   clonedPost.querySelector('.picture__comments') .innerHTML = post.comments.length;
+  clonedPost.dataset.id = post.id;
   return clonedPost;
 };
 
@@ -106,10 +110,10 @@ var createPostElements = function () {
 // 3 раздел 2 часть -----------------------------
 
 // Заполнение bigPicture информацией из первого элемента массива
-/* var showBigPicture = function () {
+var showBigPicture = function () {
   bigPicture.classList.remove('hidden');
   body.classList.add('modal-open');
-}; */
+};
 
 // Функция удаляет комментарии по умолчанию из разметки
 var clearComments = function () {
@@ -137,11 +141,14 @@ var createCommentElements = function (comments) {
 };
 
 var setupBigPicture = function (post) {
-  bigPicture.querySelector('.big-picture__img').src = post.url;
+  bigPicture.querySelector('.big-picture__img img').src = post.url;
   bigPicture.querySelector('.likes-count').textContent = post.likes;
-  bigPicture.querySelector('.comments-count') .textContent = post.comments.length;
-  bigPicture.querySelector('.social__caption') .textContent = post.description;
+  bigPicture.querySelector('.comments-count').textContent = post.comments.length;
+  bigPicture.querySelector('.social__caption').textContent = post.description;
   createCommentElements(post.comments);
+
+  document.addEventListener('keydown', onEditorCloseEsc);
+  bigPictureCancel.addEventListener('click', closeBigPicture);
 };
 
 // Прячем блоки счётчика комментариев и загрузки новых комментариев
@@ -176,6 +183,7 @@ var closeEditor = function () {
 var onEditorCloseEsc = function (evt) {
   if (evt.key === 'Escape') {
     closeEditor();
+    closeBigPicture();
   }
 };
 
@@ -327,19 +335,61 @@ inputHashtags.addEventListener('input', function () {
   }
 });
 
-inputHashtags.addEventListener('focus', function () {
-  document.removeEventListener('keydown', onEditorCloseEsc);
+// 4 раздел  2 часть ----------------------------
+// Валидация описание фотографии
+textDescription.addEventListener('input', function () {
+  var textLenght = textDescription.value.length;
+  if (textLenght > MAX_TEXT_LENGTH) {
+    textDescription.setCustomValidity('Удалите лишние' + (textLenght - MAX_TEXT_LENGTH) + 'симв.');
+  } else {
+    textDescription.setCustomValidity('');
+  }
 });
 
-inputHashtags.addEventListener('blur', function () {
+// Закрытие большого фото
+function closeBigPicture() {
+  bigPicture.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', onEditorCloseEsc);
+  bigPictureCancel.removeEventListener('keydown', closeBigPicture);
+}
+
+// открытие по enter
+var onPreviewEnterPress = function (evt) {
+  if (evt.keyCode === 13) {
+    openPreviewBigPhoto();
+  }
+};
+
+// открытие фото по одному из превью
+function onCustomPhotoClick(evt) {
+  openPreviewBigPhoto();
+  var customPhoto = evt.target.attributes.src.value;
+  for (var i = 0; i < posts.length; i++) {
+    if (customPhoto === posts[i].url) {
+      setupBigPicture(posts[i]);
+    }
+  }
+}
+// просмотр большого фото
+function openPreviewBigPhoto() {
+  bigPicture.classList.remove('hidden');
+  document.querySelector('body').classList.add('modal-open');
   document.addEventListener('keydown', onEditorCloseEsc);
-});
+  bigPictureCancel.addEventListener('click', function () {
+    closeBigPicture();
+  });
+  bigPictureCancel.addEventListener('keydown', onEditorCloseEsc);
+}
+
+picturesContainer.addEventListener('click', onCustomPhotoClick);
+picturesContainer.addEventListener('keydown', onPreviewEnterPress);
 
 createPosts();
 createPostElements();
 hideCommentCounter();
 hideCommentLoader();
 setupBigPicture(posts[0]);
-// showBigPicture();
+showBigPicture();
 resetScale();
 applyEffect();
