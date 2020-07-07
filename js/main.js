@@ -13,7 +13,6 @@ var POSTS_COUNT = 25;
 var MAX_SCALE_VALUE = 100;
 var MIN_SCALE_VALUE = 25;
 var SCALE_STEP = 25;
-var MAX_TEXT_LENGTH = 140;
 
 var pictureTemplate = document.querySelector('#picture')
   .content
@@ -92,9 +91,13 @@ var createPosts = function () {
 var createPostElement = function (post) {
   var clonedPost = pictureTemplate.cloneNode(true);
   clonedPost.querySelector('.picture__img').src = post.url;
-  clonedPost.querySelector('.picture__likes') .textContent = post.likes;
-  clonedPost.querySelector('.picture__comments') .innerHTML = post.comments.length;
-  clonedPost.dataset.id = post.id;
+  clonedPost.querySelector('.picture__likes').textContent = post.likes;
+  clonedPost.querySelector('.picture__comments').textContent = post.comments.length;
+  clonedPost.addEventListener('click', function () {
+    showBigPicture(post);
+  });
+
+  clonedPost.addEventListener('keydown', onPreviewEnterPress);
   return clonedPost;
 };
 
@@ -108,11 +111,12 @@ var createPostElements = function () {
 };
 
 // 3 раздел 2 часть -----------------------------
-
 // Заполнение bigPicture информацией из первого элемента массива
-var showBigPicture = function () {
+var showBigPicture = function (post) {
+  setupBigPicture(post);
   bigPicture.classList.remove('hidden');
   body.classList.add('modal-open');
+  document.addEventListener('keydown', onEscapePress);
 };
 
 // Функция удаляет комментарии по умолчанию из разметки
@@ -147,8 +151,7 @@ var setupBigPicture = function (post) {
   bigPicture.querySelector('.social__caption').textContent = post.description;
   createCommentElements(post.comments);
 
-  document.addEventListener('keydown', onEditorCloseEsc);
-  bigPictureCancel.addEventListener('click', closeBigPicture);
+  document.addEventListener('keydown', onEscapePress);
 };
 
 // Прячем блоки счётчика комментариев и загрузки новых комментариев
@@ -183,7 +186,6 @@ var closeEditor = function () {
 var onEditorCloseEsc = function (evt) {
   if (evt.key === 'Escape') {
     closeEditor();
-    closeBigPicture();
   }
 };
 
@@ -279,6 +281,28 @@ var applyEffect = function () {
   });
 };
 
+// Закрытие фото по esc
+var onEscapePress = function (evt) {
+  if (evt.key === 'Escape') {
+    closeBigPicture();
+  }
+};
+
+// Закрытие большого фото
+var closeBigPicture = function () {
+  bigPicture.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  document.removeEventListener('keydown', onEscapePress);
+  document.removeEventListener('keydown', closeBigPicture);
+};
+
+// открытие по enter
+var onPreviewEnterPress = function (evt) {
+  if (evt.key === 'Enter') {
+  // showBigPicture(post);
+  }
+};
+
 // Открытие формы редактирования изображения
 uploadFile.addEventListener('change', function () {
   openEditor();
@@ -335,61 +359,34 @@ inputHashtags.addEventListener('input', function () {
   }
 });
 
-// 4 раздел  2 часть ----------------------------
+inputHashtags.addEventListener('focus', function () {
+  document.removeEventListener('keydown', onEditorCloseEsc);
+});
+
+textDescription.addEventListener('input', function () {
+  document.removeEventListener('keydown', onEditorCloseEsc);
+});
+
 // Валидация описание фотографии
 textDescription.addEventListener('input', function () {
-  var textLenght = textDescription.value.length;
-  if (textLenght > MAX_TEXT_LENGTH) {
-    textDescription.setCustomValidity('Удалите лишние' + (textLenght - MAX_TEXT_LENGTH) + 'симв.');
+  if (textDescription.length > 140) {
+    textDescription.setCustomValidity('Максимальное количество символов 140');
   } else {
     textDescription.setCustomValidity('');
   }
 });
 
-// Закрытие большого фото
-function closeBigPicture() {
-  bigPicture.classList.add('hidden');
-  document.body.classList.remove('modal-open');
-  document.removeEventListener('keydown', onEditorCloseEsc);
-  bigPictureCancel.removeEventListener('keydown', closeBigPicture);
-}
+bigPictureCancel.addEventListener('click', function () {
+  closeBigPicture();
+});
 
-// открытие по enter
-var onPreviewEnterPress = function (evt) {
-  if (evt.keyCode === 13) {
-    openPreviewBigPhoto();
-  }
-};
-
-// открытие фото по одному из превью
-function onCustomPhotoClick(evt) {
-  openPreviewBigPhoto();
-  var customPhoto = evt.target.attributes.src.value;
-  for (var i = 0; i < posts.length; i++) {
-    if (customPhoto === posts[i].url) {
-      setupBigPicture(posts[i]);
-    }
-  }
-}
-// просмотр большого фото
-function openPreviewBigPhoto() {
-  bigPicture.classList.remove('hidden');
-  document.querySelector('body').classList.add('modal-open');
-  document.addEventListener('keydown', onEditorCloseEsc);
-  bigPictureCancel.addEventListener('click', function () {
-    closeBigPicture();
-  });
-  bigPictureCancel.addEventListener('keydown', onEditorCloseEsc);
-}
-
-picturesContainer.addEventListener('click', onCustomPhotoClick);
-picturesContainer.addEventListener('keydown', onPreviewEnterPress);
+bigPictureCancel.addEventListener('keydown', function () {
+  onEscapePress();
+});
 
 createPosts();
 createPostElements();
 hideCommentCounter();
 hideCommentLoader();
-setupBigPicture(posts[0]);
-showBigPicture();
 resetScale();
 applyEffect();
