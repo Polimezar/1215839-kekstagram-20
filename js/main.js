@@ -13,6 +13,8 @@ var POSTS_COUNT = 25;
 var MAX_SCALE_VALUE = 100;
 var MIN_SCALE_VALUE = 25;
 var SCALE_STEP = 25;
+var MAX_HASHTAG_LENGTH = 20;
+var MAX_HASHTAG_COUNTS = 5;
 
 var pictureTemplate = document.querySelector('#picture')
   .content
@@ -37,12 +39,11 @@ var effectLevelValue = document.querySelector('.effect-level__value');
 var slider = document.querySelector('.img-upload__effect-level');
 var hashtagRegExp = /^(#[a-zA-Zа-яА-Я0-9]+ +){0,4}(#[a-zA-Zа-яА-Я0-9]+)?$/;
 var inputHashtags = document.querySelector('.text__hashtags');
-var maxHashtagLength = 20;
-var maxHashtagCounts = 5;
-var minHashtagLength = 2;
 var body = document.querySelector('body');
 var imgUploadOverlay = document.querySelector('.img-upload__overlay');
 var selectedEffect = 'none';
+var bigPictureCancel = document.querySelector('.big-picture__cancel');
+var textDescription = document.querySelector('.text__description');
 
 // Функция подбора случайного числа
 var getRandomNumber = function (min, max) {
@@ -89,8 +90,11 @@ var createPosts = function () {
 var createPostElement = function (post) {
   var clonedPost = pictureTemplate.cloneNode(true);
   clonedPost.querySelector('.picture__img').src = post.url;
-  clonedPost.querySelector('.picture__likes') .textContent = post.likes;
-  clonedPost.querySelector('.picture__comments') .innerHTML = post.comments.length;
+  clonedPost.querySelector('.picture__likes').textContent = post.likes;
+  clonedPost.querySelector('.picture__comments').textContent = post.comments.length;
+  clonedPost.addEventListener('click', function () {
+    showBigPicture(post);
+  });
   return clonedPost;
 };
 
@@ -104,12 +108,13 @@ var createPostElements = function () {
 };
 
 // 3 раздел 2 часть -----------------------------
-
 // Заполнение bigPicture информацией из первого элемента массива
-/* var showBigPicture = function () {
+var showBigPicture = function (post) {
+  setupBigPicture(post);
   bigPicture.classList.remove('hidden');
   body.classList.add('modal-open');
-}; */
+  document.addEventListener('keydown', onEscapePress);
+};
 
 // Функция удаляет комментарии по умолчанию из разметки
 var clearComments = function () {
@@ -137,10 +142,10 @@ var createCommentElements = function (comments) {
 };
 
 var setupBigPicture = function (post) {
-  bigPicture.querySelector('.big-picture__img').src = post.url;
+  bigPicture.querySelector('.big-picture__img img').src = post.url;
   bigPicture.querySelector('.likes-count').textContent = post.likes;
-  bigPicture.querySelector('.comments-count') .textContent = post.comments.length;
-  bigPicture.querySelector('.social__caption') .textContent = post.description;
+  bigPicture.querySelector('.comments-count').textContent = post.comments.length;
+  bigPicture.querySelector('.social__caption').textContent = post.description;
   createCommentElements(post.comments);
 };
 
@@ -271,6 +276,20 @@ var applyEffect = function () {
   });
 };
 
+// Закрытие фото по esc
+var onEscapePress = function (evt) {
+  if (evt.key === 'Escape') {
+    closeBigPicture();
+  }
+};
+
+// Закрытие большого фото
+var closeBigPicture = function () {
+  bigPicture.classList.add('hidden');
+  body.classList.remove('modal-open');
+  document.removeEventListener('keydown', onEscapePress);
+};
+
 // Открытие формы редактирования изображения
 uploadFile.addEventListener('change', function () {
   openEditor();
@@ -309,7 +328,7 @@ inputHashtags.addEventListener('input', function () {
   var filterMassTextFill = (newlotTextBlock.length !== lotTextBlock.length);
   if (filterMassTextFill) {
     inputHashtags.setCustomValidity('Хештеги не должны повторяться!');
-  } else if (newlotTextBlock.length > maxHashtagCounts) {
+  } else if (newlotTextBlock.length > MAX_HASHTAG_COUNTS) {
     inputHashtags.setCustomValidity('Максимальное количество хештегов 5шт!');
   } else if (hashtagRegExp.test(inputHashtags.value)) {
     inputHashtags.setCustomValidity('');
@@ -317,13 +336,15 @@ inputHashtags.addEventListener('input', function () {
     inputHashtags.setCustomValidity('Неправильно набран хеш-тег! Пример: #beaty');
   }
   for (var i = 0; i < newlotTextBlock.length; i++) {
-    if (newlotTextBlock[i].length > maxHashtagLength) {
+    if (newlotTextBlock[i].length > MAX_HASHTAG_LENGTH) {
       inputHashtags.setCustomValidity('Максимальное количество знаков, не должно превышать 20 включая знак #');
       break;
-    } else if (newlotTextBlock[i].length < minHashtagLength) {
-      inputHashtags.setCustomValidity('Хештег не может состоять из одного "#"');
     }
-    break;
+  }
+  if (!inputHashtags.validity.valid) {
+    inputHashtags.style.outline = '2px solid red';
+  } else {
+    inputHashtags.style.outline = 'none';
   }
 });
 
@@ -331,15 +352,21 @@ inputHashtags.addEventListener('focus', function () {
   document.removeEventListener('keydown', onEditorCloseEsc);
 });
 
-inputHashtags.addEventListener('blur', function () {
-  document.addEventListener('keydown', onEditorCloseEsc);
+textDescription.addEventListener('input', function () {
+  document.removeEventListener('keydown', onEditorCloseEsc);
+});
+
+bigPictureCancel.addEventListener('click', function () {
+  closeBigPicture();
+});
+
+bigPictureCancel.addEventListener('keydown', function () {
+  onEscapePress();
 });
 
 createPosts();
 createPostElements();
 hideCommentCounter();
 hideCommentLoader();
-setupBigPicture(posts[0]);
-// showBigPicture();
 resetScale();
 applyEffect();
