@@ -21,7 +21,6 @@
   var body = document.querySelector('body');
   var imgUploadOverlay = document.querySelector('.img-upload__overlay');
   var selectedEffect = 'none';
-  var bigPictureCancel = document.querySelector('.big-picture__cancel');
   var textDescription = document.querySelector('.text__description');
   var inputHashtags = document.querySelector('.text__hashtags');
 
@@ -167,14 +166,6 @@
 
   textDescription.addEventListener('input', function () {
     document.removeEventListener('keydown', onEditorCloseEsc);
-  });
-
-  bigPictureCancel.addEventListener('click', function () {
-    window.preview.closeBigPicture();
-  });
-
-  bigPictureCancel.addEventListener('keydown', function () {
-    window.preview.onEscapePress();
   });
 
   effectLevelPin.addEventListener('mousedown', function (evt) {

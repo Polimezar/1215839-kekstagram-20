@@ -10,12 +10,8 @@
     'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
   ];
   var USER_NAMES = ['Аделина', 'Елена', 'Дмитрий', 'Екатерина', 'Александр', 'Юлия', 'Владислав'];
+  // var posts = [];
   var POSTS_COUNT = 25;
-
-  var pictureTemplate = document.querySelector('#picture')
-    .content
-    .querySelector('.picture');
-  var posts = [];
 
   // Функция для создания комментария
   var createComment = function () {
@@ -47,41 +43,16 @@
 
   // Функция для создания  25 постов
   var createPosts = function () {
-    posts = [];
+    var posts = [];
     for (var i = 0; i < POSTS_COUNT; i++) {
       posts.push(createPost(i)
       );
     }
-  };
-
-  // Создание DOM элементов
-  var createPostElement = function (post) {
-    var clonedPost = pictureTemplate.cloneNode(true);
-    clonedPost.querySelector('.picture__img').src = post.url;
-    clonedPost.querySelector('.picture__likes').textContent = post.likes;
-    clonedPost.querySelector('.picture__comments').textContent = post.comments.length;
-    clonedPost.addEventListener('click', function () {
-      window.preview.showBigPicture(post);
-    });
-    return clonedPost;
-  };
-
-  var picturesContainer = document.querySelector('.pictures');
-
-  // Отрисовка DOM элемента на странице
-  var createPostElements = function () {
-    var fragment = document.createDocumentFragment();
-    for (var j = 0; j < POSTS_COUNT; j++) {
-      fragment.appendChild(createPostElement(posts[j]));
-    }
-    picturesContainer.appendChild(fragment);
+    return posts;
   };
 
   window.data = {
-    createPosts: createPosts,
-    createPostElements: createPostElements
+    createPosts: createPosts
   };
 
-  createPosts();
-  createPostElements();
 })();
