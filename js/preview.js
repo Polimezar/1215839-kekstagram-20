@@ -7,6 +7,7 @@
     .querySelector('.social__comment');
   var commentsContainer = document.querySelector('.social__comments');
   var body = document.querySelector('body');
+  var bigPictureCancel = document.querySelector('.big-picture__cancel');
 
   // Заполнение bigPicture информацией из первого элемента массива
   var showBigPicture = function (post) {
@@ -61,7 +62,7 @@
   // Закрытие фото по esc
   var onEscapePress = function (evt) {
     if (evt.key === 'Escape') {
-      window.preview.closeBigPicture();
+      closeBigPicture();
     }
   };
 
@@ -69,13 +70,19 @@
   var closeBigPicture = function () {
     bigPicture.classList.add('hidden');
     body.classList.remove('modal-open');
-    document.removeEventListener('keydown', window.preview.onEscapePress);
+    document.removeEventListener('keydown', onEscapePress);
   };
 
+  bigPictureCancel.addEventListener('click', function () {
+    closeBigPicture();
+  });
+
+  bigPictureCancel.addEventListener('keydown', function () {
+    onEscapePress();
+  });
+
   window.preview = {
-    showBigPicture: showBigPicture,
-    onEscapePress: onEscapePress,
-    closeBigPicture: closeBigPicture
+    showBigPicture: showBigPicture
   };
 
   hideCommentCounter();
