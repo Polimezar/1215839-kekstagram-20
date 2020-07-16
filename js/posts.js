@@ -5,7 +5,7 @@
   .content
   .querySelector('.picture');
   var picturesContainer = document.querySelector('.pictures');
-  // var POSTS_COUNT = 25;
+  var posts = window.data.createPosts();
 
   // Создание DOM элементов
   var createPostElement = function (post) {
@@ -19,8 +19,6 @@
     return clonedPost;
   };
 
-  var posts = window.data.createPosts();
-
   // Отрисовка DOM элемента на странице
   var createPostElements = function () {
     var fragment = document.createDocumentFragment();
@@ -29,7 +27,5 @@
     }
     picturesContainer.appendChild(fragment);
   };
-
-  createPostElements(posts);
-
+  createPostElements();
 })();
