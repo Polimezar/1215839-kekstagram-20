@@ -4,6 +4,7 @@
   var MAX_SCALE_VALUE = 100;
   var MIN_SCALE_VALUE = 25;
   var SCALE_STEP = 25;
+  var TIMEOUT = 3000;
 
   var uploadCancel = document.querySelector('#upload-cancel');
   var uploadFile = document.querySelector('#upload-file');
@@ -23,6 +24,7 @@
   var selectedEffect = 'none';
   var textDescription = document.querySelector('.text__description');
   var inputHashtags = document.querySelector('.text__hashtags');
+  var form = document.querySelector('.img-upload__form');
 
   // Открывает форму редактирования картинки
   var openEditor = function () {
@@ -40,6 +42,7 @@
     imgUploadPreview.style.transform = '';
     document.removeEventListener('keydown', onEditorCloseEsc);
     window.utils.hideElement(slider);
+    imgUploadPreview.style.filter = null;
   };
 
   // Закрытие формы через клавишу ESC
@@ -131,6 +134,29 @@
     });
   };
 
+  // Функция отправки AJAX-запроса
+  function onFormSubmit(evt) {
+    evt.preventDefault();
+    function onSuccess() {
+      window.messages.renderMessage();
+      document.removeEventListener('keydown', onEditorCloseEsc);
+      closeEditor();
+      setTimeout(function () {
+        window.messages.renderSuccessMessage();
+      }, TIMEOUT);
+    }
+
+    function onError() {
+      window.messages.renderMessage();
+      document.removeEventListener('keydown', onEditorCloseEsc);
+      closeEditor();
+      window.messages.renderErrorMessage();
+    }
+
+    var formNew = new FormData(form);
+    window.load.upload(formNew, onSuccess, onError);
+  }
+
   // Открытие формы редактирования изображения
   uploadFile.addEventListener('change', function () {
     openEditor();
@@ -201,6 +227,11 @@
     document.addEventListener('mouseup', onMouseUp);
   });
 
+  form.addEventListener('submit', onFormSubmit);
   resetScale();
   applyEffect();
+
+  window.photoeditor = {
+    closeEditor: closeEditor
+  };
 })();

@@ -1,7 +1,6 @@
 'use strict';
 
 (function () {
-  // var MAX_HASHTAG_LENGTH = 20;
   var MAX_HASHTAG_COUNTS = 5;
   var hashtagsInput = document.querySelector('.text__hashtags');
 

@@ -5,7 +5,6 @@
   .content
   .querySelector('.picture');
   var picturesContainer = document.querySelector('.pictures');
-  var posts = window.data.createPosts();
 
   // Создание DOM элементов
   var createPostElement = function (post) {
@@ -20,12 +19,24 @@
   };
 
   // Отрисовка DOM элемента на странице
-  var createPostElements = function () {
+  var createPostElements = function (photos) {
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < posts.length; i++) {
-      fragment.appendChild(createPostElement(posts[i]));
+    for (var i = 0; i < photos.length; i++) {
+      fragment.appendChild(createPostElement(photos[i]));
     }
     picturesContainer.appendChild(fragment);
   };
-  createPostElements();
+
+  var onSuccess = function (post) {
+    createPostElements(post);
+  };
+
+  function onError(errorMessage) {
+    var main = document.querySelector('main');
+    var errorBlock = document.createElement('div');
+    errorBlock.classList.add('error-block');
+    errorBlock.textContent = errorMessage;
+    main.insertAdjacentElement('afterbegin', errorBlock);
+  }
+  window.load.download(onSuccess, onError);
 })();
