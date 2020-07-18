@@ -138,7 +138,7 @@
   function onFormSubmit(evt) {
     evt.preventDefault();
     function onSuccess() {
-      window.messages.renderMessage();
+      window.messages.renderLoadMessage();
       document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
       setTimeout(function () {
@@ -147,14 +147,14 @@
     }
 
     function onError() {
-      window.messages.renderMessage();
+      window.messages.renderLoadMessage();
       document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
       window.messages.renderErrorMessage();
     }
 
     var formNew = new FormData(form);
-    window.load.upload(formNew, onSuccess, onError);
+    window.backend.upload(formNew, onSuccess, onError);
   }
 
   // Открытие формы редактирования изображения
