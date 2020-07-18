@@ -30,30 +30,27 @@
     document.removeEventListener('click', onDocumentClick);
     currentMessage.remove();
     form.reset();
-    window.photoeditor.closeEditor();
+    window.editor.closeEditor();
   };
 
-  var renderLoadMessage = function () {
-    currentMessage = successMessage;
+  var showLoadMessage = function () {
     main.appendChild(loadMessage);
-
     setTimeout(function () {
       loadMessage.remove();
     }, INTERVAL);
   };
 
-  var renderSuccessMessage = function () {
-    currentMessage = errorMessage;
+  var showSuccessMessage = function () {
+    currentMessage = successMessage;
     main.appendChild(successMessage);
-
     document.addEventListener('keydown', onDocumentKeydown);
     document.addEventListener('click', onDocumentClick);
   };
 
   // отрисовка сообщения об ошибке
-  var renderErrorMessage = function () {
+  var showErrorMessage = function () {
+    currentMessage = errorMessage;
     main.appendChild(errorMessage);
-
     document.addEventListener('keydown', onDocumentKeydown);
     document.addEventListener('click', onDocumentClick);
   };
@@ -67,8 +64,8 @@
   });
 
   window.messages = {
-    renderLoadMessage: renderLoadMessage,
-    renderSuccessMessage: renderSuccessMessage,
-    renderErrorMessage: renderErrorMessage,
+    showLoadMessage: showLoadMessage,
+    showSuccessMessage: showSuccessMessage,
+    showErrorMessage: showErrorMessage,
   };
 })();

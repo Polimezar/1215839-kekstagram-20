@@ -4,10 +4,10 @@
   var MAX_HASHTAG_COUNT = 5;
   var HASHTAG_PATTERN = ['^#[a-zA-ZА-Яа-я0-9]{1,19}$'];
   var hashtagsInput = document.querySelector('.text__hashtags');
-  var uniqueHashtags = [];
 
   hashtagsInput.addEventListener('input', function () {
     var hashtags = hashtagsInput.value.trim().toLowerCase().split(/\s{1,}/g);
+    var uniqueHashtags = [];
     if (hashtags.length > MAX_HASHTAG_COUNT) {
       hashtagsInput.setCustomValidity('Максимальное количество хештегов 5шт!');
       return;

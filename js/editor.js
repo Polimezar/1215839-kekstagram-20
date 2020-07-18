@@ -135,27 +135,27 @@
   };
 
   // Функция отправки AJAX-запроса
-  function onFormSubmit(evt) {
+  var onFormSubmit = function (evt) {
     evt.preventDefault();
-    function onSuccess() {
-      window.messages.renderLoadMessage();
+    var onSuccess = function () {
+      window.messages.showLoadMessage();
       document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
       setTimeout(function () {
-        window.messages.renderSuccessMessage();
+        window.messages.showSuccessMessage();
       }, TIMEOUT);
-    }
+    };
 
-    function onError() {
-      window.messages.renderLoadMessage();
+    var onError = function () {
+      window.messages.showLoadMessage();
       document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
-      window.messages.renderErrorMessage();
-    }
+      window.messages.showErrorMessage();
+    };
 
     var formNew = new FormData(form);
     window.backend.upload(formNew, onSuccess, onError);
-  }
+  };
 
   // Открытие формы редактирования изображения
   uploadFile.addEventListener('change', function () {
@@ -231,7 +231,7 @@
   resetScale();
   applyEffect();
 
-  window.photoeditor = {
+  window.editor = {
     closeEditor: closeEditor
   };
 })();
