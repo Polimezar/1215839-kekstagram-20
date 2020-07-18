@@ -7,14 +7,18 @@
     .querySelector('.social__comment');
   var commentsContainer = document.querySelector('.social__comments');
   var body = document.querySelector('body');
-  var bigPictureCancel = document.querySelector('.big-picture__cancel');
+  var closeButton = document.querySelector('.big-picture__cancel');
+  var socialCaption = bigPicture.querySelector('.social__caption');
+  var bigPictureImg = bigPicture.querySelector('.big-picture__img img');
+  var likesCount = bigPicture.querySelector('.likes-count');
+  var commentsCount = bigPicture.querySelector('.comments-count');
 
   // Заполнение bigPicture информацией из первого элемента массива
   var showBigPicture = function (post) {
     setupBigPicture(post);
     bigPicture.classList.remove('hidden');
     body.classList.add('modal-open');
-    document.addEventListener('keydown', window.preview.onEscapePress);
+    document.addEventListener('keydown', onDocumentKeydown);
   };
 
   // Функция удаляет комментарии по умолчанию из разметки
@@ -43,10 +47,10 @@
   };
 
   var setupBigPicture = function (post) {
-    bigPicture.querySelector('.big-picture__img img').src = post.url;
-    bigPicture.querySelector('.likes-count').textContent = post.likes;
-    bigPicture.querySelector('.comments-count').textContent = post.comments.length;
-    bigPicture.querySelector('.social__caption').textContent = post.description;
+    bigPictureImg.src = post.url;
+    likesCount.textContent = post.likes;
+    commentsCount.textContent = post.comments.length;
+    socialCaption.textContent = post.description;
     createCommentElements(post.comments);
   };
 
@@ -60,7 +64,7 @@
   };
 
   // Закрытие фото по esc
-  var onEscapePress = function (evt) {
+  var onDocumentKeydown = function (evt) {
     if (evt.key === 'Escape') {
       closeBigPicture();
     }
@@ -70,18 +74,18 @@
   var closeBigPicture = function () {
     bigPicture.classList.add('hidden');
     body.classList.remove('modal-open');
-    document.removeEventListener('keydown', onEscapePress);
+    document.removeEventListener('keydown', onDocumentKeydown);
   };
 
-  bigPictureCancel.addEventListener('click', function () {
+  closeButton.addEventListener('click', function () {
     closeBigPicture();
   });
 
-  bigPictureCancel.addEventListener('keydown', function () {
-    onEscapePress();
+  closeButton.addEventListener('keydown', function () {
+    onDocumentKeydown();
   });
 
-  window.preview = {
+  window.post = {
     showBigPicture: showBigPicture
   };
 

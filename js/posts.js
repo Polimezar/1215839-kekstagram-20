@@ -5,7 +5,8 @@
   .content
   .querySelector('.picture');
   var picturesContainer = document.querySelector('.pictures');
-  // var POSTS_COUNT = 25;
+  var main = document.querySelector('main');
+  var posts;
 
   // Создание DOM элементов
   var createPostElement = function (post) {
@@ -14,12 +15,10 @@
     clonedPost.querySelector('.picture__likes').textContent = post.likes;
     clonedPost.querySelector('.picture__comments').textContent = post.comments.length;
     clonedPost.addEventListener('click', function () {
-      window.preview.showBigPicture(post);
+      window.post.showBigPicture(post);
     });
     return clonedPost;
   };
-
-  var posts = window.data.createPosts();
 
   // Отрисовка DOM элемента на странице
   var createPostElements = function () {
@@ -30,6 +29,17 @@
     picturesContainer.appendChild(fragment);
   };
 
-  createPostElements(posts);
+  var onLoadSuccess = function (data) {
+    posts = data;
+    createPostElements(data);
+  };
 
+  var onLoadEror = function (errorMessage) {
+    var errorBlock = document.createElement('div');
+    errorBlock.classList.add('error-block');
+    errorBlock.textContent = errorMessage;
+    main.insertAdjacentElement('afterbegin', errorBlock);
+  };
+
+  window.backend.download(onLoadSuccess, onLoadEror);
 })();
