@@ -4,7 +4,6 @@
   var MAX_SCALE_VALUE = 100;
   var MIN_SCALE_VALUE = 25;
   var SCALE_STEP = 25;
-  var TIMEOUT = 3000;
 
   var uploadCancel = document.querySelector('#upload-cancel');
   var uploadFile = document.querySelector('#upload-file');
@@ -16,21 +15,19 @@
   var effectLevel = document.querySelector('.effect-level');
   var effectLevelPin = document.querySelector('.effect-level__pin');
   var effectLevelValue = document.querySelector('.effect-level__value');
-  var slider = document.querySelector('.img-upload__effect-level');
   var effectLevelLine = document.querySelector('.effect-level__line');
   var effectLevelDepth = document.querySelector('.effect-level__depth');
   var body = document.querySelector('body');
   var imgUploadOverlay = document.querySelector('.img-upload__overlay');
-  var selectedEffect = 'none';
+  var selectedEffect = null;
   var textDescription = document.querySelector('.text__description');
-  var inputHashtags = document.querySelector('.text__hashtags');
   var form = document.querySelector('.img-upload__form');
 
   // Открывает форму редактирования картинки
   var openEditor = function () {
     body.classList.add('modal-open');
     imgUploadOverlay.classList.remove('hidden');
-    document.addEventListener('keydown', onEditorCloseEsc);
+    document.addEventListener('keydown', onEditorKeydown);
     resetScale();
   };
 
@@ -40,13 +37,14 @@
     imgUploadOverlay.classList.add('hidden');
     imgUploadPreview.className = '';
     imgUploadPreview.style.transform = '';
-    document.removeEventListener('keydown', onEditorCloseEsc);
-    window.utils.hideElement(slider);
+    document.removeEventListener('keydown', onEditorKeydown);
+    window.utils.hideElement(effectLevel);
     imgUploadPreview.style.filter = null;
+    resetScale();
   };
 
   // Закрытие формы через клавишу ESC
-  var onEditorCloseEsc = function (evt) {
+  var onEditorKeydown = function (evt) {
     if (evt.key === 'Escape') {
       closeEditor();
     }
@@ -60,7 +58,7 @@
 
   // размер фотографии по умолчанию
   var resetScale = function () {
-    scaleControlValue.value = ('value', '100%');
+    scaleControlValue.value = '100%';
   };
 
   // Изменение масштаба картинки нажатием -
@@ -138,23 +136,18 @@
   var onFormSubmit = function (evt) {
     evt.preventDefault();
     var onSuccess = function () {
-      window.messages.showLoadMessage();
-      document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
-      setTimeout(function () {
-        window.messages.showSuccessMessage();
-      }, TIMEOUT);
+      window.messages.showSuccessMessage();
     };
 
     var onError = function () {
-      window.messages.showLoadMessage();
-      document.removeEventListener('keydown', onEditorCloseEsc);
       closeEditor();
       window.messages.showErrorMessage();
     };
 
     var formNew = new FormData(form);
     window.backend.upload(formNew, onSuccess, onError);
+    window.messages.showLoadMessage();
   };
 
   // Открытие формы редактирования изображения
@@ -165,17 +158,11 @@
   // Закрытие формы редактирования изображения
   uploadCancel.addEventListener('click', function () {
     closeEditor();
-    resetScale();
-    imgUploadPreview.style.filter = null;
   });
 
   // Обработчик уменьшения фото
   decreaseScaleButton.addEventListener('click', function () {
     decreaseScale();
-  });
-
-  inputHashtags.addEventListener('focus', function () {
-    document.removeEventListener('keydown', onEditorCloseEsc);
   });
 
   // Обработчик увеличения фото
@@ -190,8 +177,8 @@
     imgUploadPreview.style.filter = convertPercents(saturation, selectedEffect);
   });
 
-  textDescription.addEventListener('input', function () {
-    document.removeEventListener('keydown', onEditorCloseEsc);
+  textDescription.addEventListener('keydown', function (evt) {
+    evt.stopPropagation();
   });
 
   effectLevelPin.addEventListener('mousedown', function (evt) {
@@ -204,8 +191,7 @@
 
       // обновляем смещение относительно первоначальной точки
       var shift = startX - moveEvt.clientX;
-      var effectLevelLineLeft = effectLevelLine.getBoundingClientRect().left;
-      var effectLevelPinLeft = (startX - shift - effectLevelLineLeft) / effectLevel.offsetWidth * 100;
+      var effectLevelPinLeft = (startX - shift - effectLevelLine.offsetLeft) / effectLevel.offsetWidth * 100;
       effectLevelPinLeft = Math.round(effectLevelPinLeft);
       if (effectLevelPinLeft < 0 || effectLevelPinLeft > 100) {
         return;
@@ -213,14 +199,16 @@
       effectLevelPin.style.left = effectLevelPinLeft + '%';
       effectLevelDepth.style.width = effectLevelPinLeft + '%';
 
-      convertPercents();
+      convertPercents(selectedEffect, effectLevelPinLeft);
     };
+
     // при отпускании мыши перестаем слушать события движения мыши и отпускания ее кнопки
     var onMouseUp = function (upEvt) {
       upEvt.preventDefault();
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
+
     // слушаем событие передвижения мыши
     document.addEventListener('mousemove', onMouseMove);
     // отпускания кнопки мыши
@@ -232,6 +220,6 @@
   applyEffect();
 
   window.editor = {
-    closeEditor: closeEditor
+    close: closeEditor
   };
 })();

@@ -34,12 +34,12 @@
     createPostElements(data);
   };
 
-  var onLoadEror = function (errorMessage) {
+  var onLoadError = function (errorMessage) {
     var errorBlock = document.createElement('div');
     errorBlock.classList.add('error-block');
     errorBlock.textContent = errorMessage;
     main.insertAdjacentElement('afterbegin', errorBlock);
   };
 
-  window.backend.download(onLoadSuccess, onLoadEror);
+  window.backend.download(onLoadSuccess, onLoadError);
 })();

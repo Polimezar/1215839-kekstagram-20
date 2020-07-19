@@ -2,7 +2,7 @@
 
 (function () {
   var MAX_HASHTAG_COUNT = 5;
-  var HASHTAG_PATTERN = ['^#[a-zA-ZА-Яа-я0-9]{1,19}$'];
+  var HASHTAG_PATTERN = /^#[a-zA-ZА-Яа-я0-9]{1,19}$/;
   var hashtagsInput = document.querySelector('.text__hashtags');
 
   hashtagsInput.addEventListener('input', function () {
@@ -28,5 +28,9 @@
       }
     }
     hashtagsInput.setCustomValidity('');
+  });
+
+  hashtagsInput.addEventListener('keydown', function (evt) {
+    evt.stopPropagation();
   });
 })();
