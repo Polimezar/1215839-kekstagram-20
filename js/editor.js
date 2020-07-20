@@ -7,7 +7,7 @@
 
   var uploadCancel = document.querySelector('#upload-cancel');
   var uploadFile = document.querySelector('#upload-file');
-  var imgUploadPreview = document.querySelector('.img-upload__preview');
+  var imgUploadPreview = document.querySelector('.img-upload__preview img');
   var decreaseScaleButton = document.querySelector('.scale__control--smaller');
   var increaseScaleButton = document.querySelector('.scale__control--bigger');
   var scaleControlValue = document.querySelector('.scale__control--value');
@@ -90,27 +90,27 @@
     }
   };
 
-  // Конвертирует проценты в css свойство выбранного эффекта
-  var convertPercents = function (percentValue, effectName) {
-    var effectValue = 0;
-    if (effectName === 'chrome') {
-      effectValue = percentValue / 100;
-      return 'grayscale(' + effectValue + ')';
-    } else if (effectName === 'sepia') {
-      effectValue = percentValue / 100;
-      return 'sepia(' + effectValue + ')';
-    } else if (effectName === 'marvin') {
-      effectValue = percentValue + '%';
-      return 'invert(' + effectValue + ')';
-    } else if (effectName === 'phobos') {
-      effectValue = percentValue * 3 / 100;
-      effectValue += 'px';
-      return 'blur(' + effectValue + ')';
-    } else if (effectName === 'heat') {
-      effectValue = percentValue * 2 / 100 + 1;
-      return 'brightness(' + effectValue + ')';
+  var setFilterValue = function (filterName, percent) {
+    switch (filterName) {
+      case 'none':
+        imgUploadPreview.style.filter = '';
+        break;
+      case 'chrome':
+        imgUploadPreview.style.filter = 'grayscale(' + percent / 100 + ')';
+        break;
+      case 'sepia':
+        imgUploadPreview.style.filter = 'sepia(' + percent / 100 + ')';
+        break;
+      case 'marvin':
+        imgUploadPreview.style.filter = 'invert(' + percent + '%)';
+        break;
+      case 'phobos':
+        imgUploadPreview.style.filter = 'blur(' + (percent * 3 / 100) + 'px)';
+        break;
+      case 'heat':
+        imgUploadPreview.style.filter = 'brightness(' + percent * 3 / 100 + ')';
+        break;
     }
-    return 'none';
   };
 
   // Управление эфеектами
@@ -150,6 +150,20 @@
     window.messages.showLoadMessage();
   };
 
+  var getLevelPin = function () {
+    var positionX = effectLevelPin.offsetLeft;
+    var lineWidth = effectLevelLine.offsetWidth;
+    var percent = Math.round(100 * positionX / lineWidth);
+    return percent;
+  };
+
+  var changeFilterValue = function () {
+    var current = document.querySelector('.effects__radio:checked');
+    var percent = getLevelPin();
+    effectLevelValue.value = percent;
+    setFilterValue(current.value, percent);
+  };
+
   // Открытие формы редактирования изображения
   uploadFile.addEventListener('change', function () {
     openEditor();
@@ -170,36 +184,36 @@
     increaseScale();
   });
 
-  effectLevelPin.addEventListener('mouseup', function () {
-    var effectLevelProportion = (effectLevelPin.offsetLeft + (effectLevelPin.offsetWidth / 2));
-    var saturation = Math.floor(effectLevelProportion / effectLevelPin.offsetParent.offsetWidth * 100);
-    effectLevelValue.value = saturation;
-    imgUploadPreview.style.filter = convertPercents(saturation, selectedEffect);
-  });
-
   textDescription.addEventListener('keydown', function (evt) {
     evt.stopPropagation();
   });
 
   effectLevelPin.addEventListener('mousedown', function (evt) {
     evt.preventDefault();
-    // запоминаем координаты точки, с которой начали перемещать мышь
-    var startX = evt.clientX;
+    var lineWidth = effectLevelLine.offsetWidth;
+    var startCoords = {
+      x: evt.clientX
+    };
 
     var onMouseMove = function (moveEvt) {
       moveEvt.preventDefault();
-
-      // обновляем смещение относительно первоначальной точки
-      var shift = startX - moveEvt.clientX;
-      var effectLevelPinLeft = (startX - shift - effectLevelLine.offsetLeft) / effectLevel.offsetWidth * 100;
-      effectLevelPinLeft = Math.round(effectLevelPinLeft);
-      if (effectLevelPinLeft < 0 || effectLevelPinLeft > 100) {
-        return;
+      var shift = {
+        x: startCoords.x - moveEvt.clientX
+      };
+      startCoords = {
+        x: moveEvt.clientX
+      };
+      if (effectLevelPin.offsetLeft < 0) {
+        effectLevelPin.style.left = 0 + 'px';
+        effectLevelDepth.style.width = 0 + 'px';
+      } else if (effectLevelPin.offsetLeft > lineWidth) {
+        effectLevelPin.style.left = lineWidth + 'px';
+        effectLevelDepth.style.width = lineWidth + 'px';
+      } else {
+        effectLevelPin.style.left = (effectLevelPin.offsetLeft - shift.x) + 'px';
+        effectLevelDepth.style.width = (effectLevelPin.offsetLeft - shift.x) + 'px';
       }
-      effectLevelPin.style.left = effectLevelPinLeft + '%';
-      effectLevelDepth.style.width = effectLevelPinLeft + '%';
-
-      convertPercents(selectedEffect, effectLevelPinLeft);
+      changeFilterValue();
     };
 
     // при отпускании мыши перестаем слушать события движения мыши и отпускания ее кнопки
@@ -216,6 +230,7 @@
   });
 
   form.addEventListener('submit', onFormSubmit);
+
   resetScale();
   applyEffect();
 
