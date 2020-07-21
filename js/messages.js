@@ -9,8 +9,7 @@
   var successButton = successMessage.querySelector('.success__button');
   var errorMessage = document.querySelector('#error').content.querySelector('.error').cloneNode(true);
   var errorButton = errorMessage.querySelector('.error__button');
-  var messageTemplate = document.querySelector('#messages').content.querySelector('div');
-  var loadMessage = messageTemplate.cloneNode(true);
+  var loadMessage = document.querySelector('#messages').content.querySelector('div').cloneNode(true);
   var currentMessage;
 
   // клик по произвольной области экрана при сообщении об успешной загрузке
@@ -30,7 +29,7 @@
     document.removeEventListener('click', onDocumentClick);
     currentMessage.remove();
     form.reset();
-    window.editor.closeEditor();
+    window.editor.close();
   };
 
   var showLoadMessage = function () {
