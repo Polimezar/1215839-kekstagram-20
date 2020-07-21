@@ -40,6 +40,5 @@
     errorBlock.textContent = errorMessage;
     main.insertAdjacentElement('afterbegin', errorBlock);
   };
-
   window.backend.download(onLoadSuccess, onLoadError);
 })();

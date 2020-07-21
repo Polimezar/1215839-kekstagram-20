@@ -31,6 +31,8 @@
   });
 
   hashtagsInput.addEventListener('keydown', function (evt) {
-    evt.stopPropagation();
+    if (hashtagsInput === document.activeElement) {
+      evt.stopPropagation();
+    }
   });
 })();

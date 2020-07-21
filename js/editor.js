@@ -4,26 +4,24 @@
   var MAX_SCALE_VALUE = 100;
   var MIN_SCALE_VALUE = 25;
   var SCALE_STEP = 25;
+  var DEFAULT_SCALE = 100;
 
-  var uploadCancel = document.querySelector('#upload-cancel');
+  var closeButton = document.querySelector('#upload-cancel');
   var uploadFile = document.querySelector('#upload-file');
-  var imgUploadPreview = document.querySelector('.img-upload__preview img');
+  var imagePreview = document.querySelector('.img-upload__preview img');
   var decreaseScaleButton = document.querySelector('.scale__control--smaller');
   var increaseScaleButton = document.querySelector('.scale__control--bigger');
   var scaleControlValue = document.querySelector('.scale__control--value');
-  // var effectsList = document.querySelector('.effects__list');
-  var effectLevel = document.querySelector('.effect-level');
-  // var effectLevelValue = document.querySelector('.effect-level__value');
+  var effectLevelSlider = document.querySelector('.effect-level');
   var body = document.querySelector('body');
-  var imgUploadOverlay = document.querySelector('.img-upload__overlay');
-  // var selectedEffect = null;
-  var textDescription = document.querySelector('.text__description');
+  var imagePreviewOverlay = document.querySelector('.img-upload__overlay');
+  var commentInput = document.querySelector('.text__description');
   var form = document.querySelector('.img-upload__form');
 
   // Открывает форму редактирования картинки
   var openEditor = function () {
     body.classList.add('modal-open');
-    imgUploadOverlay.classList.remove('hidden');
+    imagePreviewOverlay.classList.remove('hidden');
     document.addEventListener('keydown', onEditorKeydown);
     resetScale();
   };
@@ -31,12 +29,15 @@
   // Закрывает форму редактирования картинки
   var closeEditor = function () {
     body.classList.remove('modal-open');
-    imgUploadOverlay.classList.add('hidden');
-    imgUploadPreview.className = '';
-    imgUploadPreview.style.transform = '';
+    imagePreviewOverlay.classList.add('hidden');
     document.removeEventListener('keydown', onEditorKeydown);
-    window.utils.hideElement(effectLevel);
-    imgUploadPreview.style.filter = null;
+    resetEditor();
+  };
+
+  var resetEditor = function () {
+    imagePreview.className = '';
+    window.utils.hideElement(effectLevelSlider);
+    imagePreview.style.filter = 'none';
     resetScale();
   };
 
@@ -50,12 +51,15 @@
   // Преобразует число в css свойство scale
   var scalePicture = function (value) {
     scaleControlValue.value = value + '%';
-    imgUploadPreview.style.transform = 'scale(' + (value * 0.01) + ')';
+    imagePreview.style.transform = 'scale(' + (value * 0.01) + ')';
   };
 
   // размер фотографии по умолчанию
   var resetScale = function () {
     scaleControlValue.value = '100%';
+    imagePreview.style.transform = '';
+    scalePicture(DEFAULT_SCALE);
+    window.utils.hideElement(effectLevelSlider);
   };
 
   // Изменение масштаба картинки нажатием -
@@ -102,7 +106,7 @@
   });
 
   // Закрытие формы редактирования изображения
-  uploadCancel.addEventListener('click', function () {
+  closeButton.addEventListener('click', function () {
     closeEditor();
   });
 
@@ -116,8 +120,10 @@
     increaseScale();
   });
 
-  textDescription.addEventListener('keydown', function (evt) {
-    evt.stopPropagation();
+  commentInput.addEventListener('keydown', function (evt) {
+    if (commentInput === document.activeElement) {
+      evt.stopPropagation();
+    }
   });
 
   form.addEventListener('submit', onFormSubmit);
