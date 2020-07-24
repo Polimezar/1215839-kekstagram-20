@@ -20,25 +20,6 @@
     }
   };
 
-  // Управление эфеектами
-  effectsList.addEventListener('click', function (evt) {
-    if (evt.target.matches('input[type="radio"]')) {
-      removePictureEffects();
-      imagePreview.style.filter = null;
-      selectedEffect = evt.target.value;
-      effectLevelValue.value = DEFAULT_EFFECT_LEVEL;
-      effectLevelPin.style.left = 100 + '%';
-      effectLevelDepth.style.width = 100 + '%';
-      if (selectedEffect !== DEFAULT_EFFECT) {
-        setFilterValue();
-        window.utils.showElement(effectLevelSlider);
-        imagePreview.classList.add('effects__preview--' + selectedEffect);
-      } else {
-        window.utils.hideElement(effectLevelSlider);
-      }
-    }
-  });
-
   var setFilterValue = function (filterName, percent) {
     switch (filterName) {
       case DEFAULT_EFFECT:
@@ -75,6 +56,25 @@
     effectLevelValue.value = DEFAULT_EFFECT_LEVEL;
     setFilterValue(current.value, percent);
   };
+
+  // Управление эфеектами
+  effectsList.addEventListener('click', function (evt) {
+    if (evt.target.matches('input[type="radio"]')) {
+      removePictureEffects();
+      imagePreview.style.filter = null;
+      selectedEffect = evt.target.value;
+      effectLevelValue.value = DEFAULT_EFFECT_LEVEL;
+      effectLevelPin.style.left = 100 + '%';
+      effectLevelDepth.style.width = 100 + '%';
+      if (selectedEffect !== DEFAULT_EFFECT) {
+        setFilterValue();
+        window.utils.showElement(effectLevelSlider);
+        imagePreview.classList.add('effects__preview--' + selectedEffect);
+      } else {
+        window.utils.hideElement(effectLevelSlider);
+      }
+    }
+  });
 
   effectLevelPin.addEventListener('mousedown', function (evt) {
     var lineWidth = effectLevelLine.offsetWidth;

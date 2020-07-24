@@ -85,10 +85,10 @@
     onDocumentKeydown();
   });
 
+  hideCommentCounter();
+  hideCommentLoader();
+
   window.post = {
     showBigPicture: showBigPicture
   };
-
-  hideCommentCounter();
-  hideCommentLoader();
 })();

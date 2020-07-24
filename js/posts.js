@@ -1,12 +1,15 @@
 'use strict';
 
 (function () {
+  var filtersContainer = document.querySelector('.img-filters');
+  var defaultOrderButton = filtersContainer.querySelector('#filter-default');
+  var randomOrderButton = filtersContainer.querySelector('#filter-random');
+  var discussedOrderButton = filtersContainer.querySelector('#filter-discussed');
   var pictureTemplate = document.querySelector('#picture')
   .content
   .querySelector('.picture');
   var picturesContainer = document.querySelector('.pictures');
   var main = document.querySelector('main');
-  var posts;
 
   // Создание DOM элементов
   var createPostElement = function (post) {
@@ -21,7 +24,7 @@
   };
 
   // Отрисовка DOM элемента на странице
-  var createPostElements = function () {
+  var createPostElements = function (posts) {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < posts.length; i++) {
       fragment.appendChild(createPostElement(posts[i]));
@@ -29,14 +32,71 @@
     picturesContainer.appendChild(fragment);
   };
 
-  var onLoadSuccess = function (data) {
-    posts = data;
-    createPostElements(data);
+  var removePhotos = function () {
+    var pictures = document.querySelectorAll('.picture');
+    pictures.forEach(function (el) {
+      picturesContainer.removeChild(el);
+    });
+  };
 
-    imageFilter.classList.remove('img-filters--inactive');
-    defaultOrderButton.addEventListener('click', makeDefaultOrder);
-    randomOrderButton.addEventListener('click', makeRandomOrder);
-    discussedOrderButton.addEventListener('click', makeDiscussedOrder);
+  var getDefaultOrder = function (pictures) {
+    return pictures;
+  };
+
+  var getRandomOrder = function (pictures) {
+    var randomUniqueArray = window.utils.getUniqueArray(0, pictures.length);
+    var randomPictures = [];
+    randomUniqueArray.forEach(function (item) {
+      return randomPictures.push(pictures[item]);
+    });
+    return randomPictures;
+  };
+
+  var getDiscussedOrder = function (pictures) {
+    var sortCommentPictures = pictures;
+    sortCommentPictures.sort(function (a, b) {
+      return b.comments.length - a.comments.length;
+    });
+    return sortCommentPictures;
+  };
+
+  var clickFilterButton = function (photos) {
+    var sortPictures = [];
+
+    var onButtonDefaultClick = window.debounce.debounce(function (evt) {
+      changeFilter(getDefaultOrder, evt);
+    });
+
+    var onButtonRandomClick = window.debounce.debounce(function (evt) {
+      changeFilter(getRandomOrder, evt);
+    });
+
+    var onButtonDiscussionClick = window.debounce.debounce(function (evt) {
+      changeFilter(getDiscussedOrder, evt);
+    });
+
+    var changeFilter = function (callback, evt) {
+      evt.preventDefault();
+      var target = evt.target;
+      if (target.type === 'button') {
+        var currentFilters = filtersContainer.querySelector('.img-filters__button--active');
+        currentFilters.classList.remove('img-filters__button--active');
+        target.classList.add('img-filters__button--active');
+        removePhotos();
+        sortPictures = callback(photos);
+        createPostElements(sortPictures, picturesContainer);
+      }
+    };
+
+    defaultOrderButton.addEventListener('click', onButtonDefaultClick);
+    randomOrderButton.addEventListener('click', onButtonRandomClick);
+    discussedOrderButton.addEventListener('click', onButtonDiscussionClick);
+  };
+
+  var onLoadSuccess = function (pictures) {
+    createPostElements(pictures, picturesContainer);
+    filtersContainer.classList.remove('img-filters--inactive');
+    clickFilterButton(pictures);
   };
 
   var onLoadError = function (errorMessage) {
@@ -44,70 +104,6 @@
     errorBlock.classList.add('error-block');
     errorBlock.textContent = errorMessage;
     main.insertAdjacentElement('afterbegin', errorBlock);
-  };
-
-  // ----------
-  var MAX_COUNT_RANDOM_PHOTO = 10;
-
-  var imageFilter = document.querySelector('.img-filters');
-  var defaultOrderButton = imageFilter.querySelector('#filter-default');
-  var randomOrderButton = imageFilter.querySelector('#filter-random');
-  var discussedOrderButton = imageFilter.querySelector('#filter-discussed');
-  var filterButtons = imageFilter.querySelectorAll('.img-filters__button');
-
-  var removeActiveFilter = function () {
-    filterButtons.forEach(function (el) {
-      if (el.className.includes('img-filters__button--active')) {
-        el.classList.remove('img-filters__button--active');
-      }
-    });
-  };
-
-  var removePhotos = function () {
-    var picturesSection = document.querySelector('.pictures');
-    var pictures = document.querySelectorAll('.picture');
-    pictures.forEach(function (el) {
-      picturesSection.removeChild(el);
-    });
-  };
-
-  var getRandomNumber = function (min, max) {
-    return Math.floor(min + Math.random() * (max + 1 - min));
-  };
-
-  var mix = function (arr) {
-    var randomPhotos = [];
-    for (var i = MAX_COUNT_RANDOM_PHOTO; i > 0; i--) {
-      var j = getRandomNumber(0, arr.length - 1);
-      randomPhotos.push(arr[j]);
-      arr.splice(j, 1);
-    }
-    return randomPhotos;
-  };
-
-  var changeFilter = function (button, data) {
-    removeActiveFilter();
-    button.classList.add('img-filters__button--active');
-    removePhotos();
-    window.debounce.debounce(createPostElements(data));
-    onLoadSuccess(data);
-  };
-
-  var makeDefaultOrder = function () {
-    var defaultOrderPhotos = posts.slice();
-    changeFilter(defaultOrderButton, defaultOrderPhotos);
-  };
-
-  var makeRandomOrder = function () {
-    var randomOrderPhotos = mix(posts.slice());
-    changeFilter(randomOrderButton, randomOrderPhotos);
-  };
-
-  var makeDiscussedOrder = function () {
-    var discussOrderPhotos = posts.slice().sort(function (a, b) {
-      return b.comments.length - a.comments.length;
-    });
-    changeFilter(discussedOrderButton, discussOrderPhotos);
   };
 
   window.backend.download(onLoadSuccess, onLoadError);
