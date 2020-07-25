@@ -1,6 +1,8 @@
 'use strict';
 
 (function () {
+  var RANDOM_ELEMENTS_COUNT = 10;
+
   var filtersContainer = document.querySelector('.img-filters');
   var defaultOrderButton = filtersContainer.querySelector('#filter-default');
   var randomOrderButton = filtersContainer.querySelector('#filter-random');
@@ -10,6 +12,7 @@
   .querySelector('.picture');
   var picturesContainer = document.querySelector('.pictures');
   var main = document.querySelector('main');
+  var posts;
 
   // Создание DOM элементов
   var createPostElement = function (post) {
@@ -24,7 +27,7 @@
   };
 
   // Отрисовка DOM элемента на странице
-  var createPostElements = function (posts) {
+  var createPostElements = function () {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < posts.length; i++) {
       fragment.appendChild(createPostElement(posts[i]));
@@ -39,64 +42,39 @@
     });
   };
 
-  var getDefaultOrder = function (pictures) {
-    return pictures;
+  // по умолчанию
+  var getDefaultOrder = function () {
+    return posts;
   };
 
-  var getRandomOrder = function (pictures) {
-    var randomUniqueArray = window.utils.getUniqueArray(0, pictures.length);
-    var randomPictures = [];
-    randomUniqueArray.forEach(function (item) {
-      return randomPictures.push(pictures[item]);
-    });
-    return randomPictures;
+  // 10 случайных
+  var getRandomOrder = function () {
+    return window.utils.getRandomElements(posts, RANDOM_ELEMENTS_COUNT);
   };
 
-  var getDiscussedOrder = function (pictures) {
-    var sortCommentPictures = pictures;
-    sortCommentPictures.sort(function (a, b) {
+  // самые обсуждаемые
+  var getDiscussedOrder = function () {
+    return posts.slice().sort(function (a, b) {
       return b.comments.length - a.comments.length;
     });
-    return sortCommentPictures;
   };
 
-  var clickFilterButton = function (photos) {
-    var sortPictures = [];
-
-    var onButtonDefaultClick = window.debounce.debounce(function (evt) {
-      changeFilter(getDefaultOrder, evt);
-    });
-
-    var onButtonRandomClick = window.debounce.debounce(function (evt) {
-      changeFilter(getRandomOrder, evt);
-    });
-
-    var onButtonDiscussionClick = window.debounce.debounce(function (evt) {
-      changeFilter(getDiscussedOrder, evt);
-    });
-
-    var changeFilter = function (callback, evt) {
-      evt.preventDefault();
-      var target = evt.target;
-      if (target.type === 'button') {
-        var currentFilters = filtersContainer.querySelector('.img-filters__button--active');
-        currentFilters.classList.remove('img-filters__button--active');
-        target.classList.add('img-filters__button--active');
-        removePhotos();
-        sortPictures = callback(photos);
-        createPostElements(sortPictures, picturesContainer);
-      }
-    };
-
-    defaultOrderButton.addEventListener('click', onButtonDefaultClick);
-    randomOrderButton.addEventListener('click', onButtonRandomClick);
-    discussedOrderButton.addEventListener('click', onButtonDiscussionClick);
+  var removeActiveFilter = function () {
+    var currentFilter = filtersContainer.querySelector('.img-filters__button--active');
+    currentFilter.classList.remove('img-filters__button--active');
   };
 
-  var onLoadSuccess = function (pictures) {
-    createPostElements(pictures, picturesContainer);
+  var changeFilter = function (button, data) {
+    removeActiveFilter();
+    button.classList.add('img-filters__button--active');
+    removePhotos();
+    window.debounce.debounce(createPostElements(data));
+  };
+
+  var onLoadSuccess = function (data) {
+    posts = data;
+    createPostElements(data);
     filtersContainer.classList.remove('img-filters--inactive');
-    clickFilterButton(pictures);
   };
 
   var onLoadError = function (errorMessage) {
@@ -105,6 +83,18 @@
     errorBlock.textContent = errorMessage;
     main.insertAdjacentElement('afterbegin', errorBlock);
   };
+
+  defaultOrderButton.addEventListener('click.', function () {
+    changeFilter(getDefaultOrder);
+  });
+
+  randomOrderButton.addEventListener('click.', function () {
+    changeFilter(getRandomOrder);
+  });
+
+  discussedOrderButton.addEventListener('click.', function () {
+    changeFilter(getDiscussedOrder);
+  });
 
   window.backend.download(onLoadSuccess, onLoadError);
 })();

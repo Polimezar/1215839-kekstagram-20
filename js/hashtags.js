@@ -31,7 +31,7 @@
   });
 
   hashtagsInput.addEventListener('keydown', function (evt) {
-    if (hashtagsInput === document.activeElement) {
+    if (evt.key === 'Escape') {
       evt.stopPropagation();
     }
   });

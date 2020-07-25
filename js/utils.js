@@ -2,6 +2,7 @@
 
 // Функция с константами
 (function () {
+  var DEBOUNCE_INTERVAL = 300;
 
   // Добавляет элементу element класс visually-hidden
   var hideElement = function (element) {
@@ -19,7 +20,7 @@
   };
 
   // Функция создания массива уникальных чисел
-  var getUniqueArray = function (min, max) {
+  var getRandomElements = function (min, max) {
     var myArray = [];
 
     for (var j = 0; myArray.length < max; j++) {
@@ -38,9 +39,24 @@
     return myArray.slice(0, 10);
   };
 
+  var debounce = function (cb) {
+    var lastTimeout = null;
+
+    return function () {
+      var parameters = arguments;
+      if (lastTimeout) {
+        window.clearTimeout(lastTimeout);
+      }
+      lastTimeout = window.setTimeout(function () {
+        cb.apply(null, parameters);
+      }, DEBOUNCE_INTERVAL);
+    };
+  };
+
   window.utils = {
     hideElement: hideElement,
     showElement: showElement,
-    getUniqueArray: getUniqueArray
+    getRandomElements: getRandomElements,
+    debounce: debounce
   };
 })();

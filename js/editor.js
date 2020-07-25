@@ -121,7 +121,7 @@
   });
 
   commentInput.addEventListener('keydown', function (evt) {
-    if (commentInput === document.activeElement) {
+    if (evt.key === 'Escape') {
       evt.stopPropagation();
     }
   });
