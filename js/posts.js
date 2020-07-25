@@ -7,6 +7,7 @@
   var defaultOrderButton = filtersContainer.querySelector('#filter-default');
   var randomOrderButton = filtersContainer.querySelector('#filter-random');
   var discussedOrderButton = filtersContainer.querySelector('#filter-discussed');
+
   var pictureTemplate = document.querySelector('#picture')
   .content
   .querySelector('.picture');
@@ -47,6 +48,10 @@
     return posts;
   };
 
+  defaultOrderButton.addEventListener('click', function () {
+    changeFilter(defaultOrderButton, getDefaultOrder());
+  });
+
   // 10 случайных
   var getRandomOrder = function () {
     return window.utils.getRandomElements(posts, RANDOM_ELEMENTS_COUNT);
@@ -59,16 +64,13 @@
     });
   };
 
-  var removeActiveFilter = function () {
+  var changeFilter = function (button, data) {
+    posts = data;
     var currentFilter = filtersContainer.querySelector('.img-filters__button--active');
     currentFilter.classList.remove('img-filters__button--active');
-  };
-
-  var changeFilter = function (button, data) {
-    removeActiveFilter();
     button.classList.add('img-filters__button--active');
     removePhotos();
-    window.debounce.debounce(createPostElements(data));
+    window.utils.debounce(createPostElements(data));
   };
 
   var onLoadSuccess = function (data) {
@@ -84,16 +86,16 @@
     main.insertAdjacentElement('afterbegin', errorBlock);
   };
 
-  defaultOrderButton.addEventListener('click.', function () {
-    changeFilter(getDefaultOrder);
+  defaultOrderButton.addEventListener('click', function () {
+    changeFilter(defaultOrderButton, getDefaultOrder());
   });
 
-  randomOrderButton.addEventListener('click.', function () {
-    changeFilter(getRandomOrder);
+  randomOrderButton.addEventListener('click', function () {
+    changeFilter(randomOrderButton, getRandomOrder());
   });
 
-  discussedOrderButton.addEventListener('click.', function () {
-    changeFilter(getDiscussedOrder);
+  discussedOrderButton.addEventListener('click', function () {
+    changeFilter(discussedOrderButton, getDiscussedOrder());
   });
 
   window.backend.download(onLoadSuccess, onLoadError);
