@@ -1,94 +1,116 @@
 'use strict';
 
 (function () {
-  var bigPicture = document.querySelector('.big-picture');
-  var commentTemplate = document.querySelector('#comment')
-    .content
-    .querySelector('.social__comment');
-  var commentsContainer = document.querySelector('.social__comments');
+  var MAX_COMMENT = 5;
+  var Avatar = {
+    WIDTH: 35,
+    HEIGHT: 35
+  };
+  var comments = null;
+  var renderedComments = 0;
   var body = document.querySelector('body');
-  var closeButton = document.querySelector('.big-picture__cancel');
-  var socialCaption = bigPicture.querySelector('.social__caption');
+  var bigPicture = document.querySelector('.big-picture');
   var bigPictureImg = bigPicture.querySelector('.big-picture__img img');
   var likesCount = bigPicture.querySelector('.likes-count');
-  var commentsCount = bigPicture.querySelector('.comments-count');
+  var commentsContainer = bigPicture.querySelector('.social__comments');
+  var socialCaption = bigPicture.querySelector('.social__caption');
+  var closeButton = bigPicture.querySelector('.big-picture__cancel');
+  var commentsCount = bigPicture.querySelector('.social__comment-count');
+  var commentsButton = bigPicture.querySelector('.comments-loader');
 
-  // Заполнение bigPicture информацией из первого элемента массива
-  var showBigPicture = function (post) {
-    setupBigPicture(post);
-    bigPicture.classList.remove('hidden');
-    body.classList.add('modal-open');
-    document.addEventListener('keydown', onDocumentKeydown);
-  };
+  commentsCount.innerHTML = '';
+  var currentCommentsCount = document.createElement('span');
+  currentCommentsCount.classList.add('current-comments-count');
+  commentsCount.appendChild(currentCommentsCount);
+  commentsCount.appendChild(document.createTextNode(' из '));
+  var maxCommentsCount = document.createElement('span');
+  maxCommentsCount.classList.add('comments-count');
+  commentsCount.appendChild(maxCommentsCount);
+  commentsCount.appendChild(document.createTextNode(' комментариев'));
 
-  // Функция удаляет комментарии по умолчанию из разметки
-  var clearComments = function () {
-    while (commentsContainer.firstChild) {
-      commentsContainer.removeChild(commentsContainer.firstChild);
-    }
-  };
-
-  var createCommentElement = function (comment) {
-    var commentElement = commentTemplate.cloneNode(true);
-    commentElement.querySelector('img').src = comment.avatar;
-    commentElement.querySelector('img').alt = comment.name;
-    commentElement.querySelector('.social__text').textContent = comment.message;
-    return commentElement;
-  };
-
-  // Функция для вставки сгенерированных комментариев в DOM
-  var createCommentElements = function (comments) {
+  var renderComments = function () {
+    var length = +maxCommentsCount.textContent;
+    var step = 1;
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < comments.length; i++) {
-      fragment.appendChild(createCommentElement(comments[i]));
+    for (; renderedComments <= length; renderedComments += 1) {
+      currentCommentsCount.textContent = renderedComments;
+
+      if (renderedComments === length) {
+        commentsButton.classList.add('hidden');
+        return;
+      }
+      if (comments[renderedComments]) {
+        if (step > MAX_COMMENT) {
+          break;
+        }
+        var comment = document.createElement('li');
+        comment.classList.add('social__comment');
+
+        var avatar = document.createElement('img');
+        avatar.classList.add('social__picture');
+        avatar.src = comments[renderedComments].avatar;
+        avatar.alt = 'Аватар ' + comments[renderedComments].name;
+        avatar.width = Avatar.WIDTH;
+        avatar.height = Avatar.HEIGHT;
+
+        var text = document.createElement('p');
+        text.classList.add('social__text');
+        text.textContent = comments[renderedComments].message;
+
+        comment.appendChild(avatar);
+        comment.appendChild(text);
+
+        fragment.appendChild(comment);
+        commentsContainer.appendChild(fragment);
+
+        step += 1;
+      }
     }
-    clearComments(); // Подчищаем комменты с разметки
-    commentsContainer.appendChild(fragment); // Вставляем сгенерированные на страницу
   };
 
-  var setupBigPicture = function (post) {
-    bigPictureImg.src = post.url;
-    likesCount.textContent = post.likes;
-    commentsCount.textContent = post.comments.length;
-    socialCaption.textContent = post.description;
-    createCommentElements(post.comments);
+  var onCommentsButtonClick = function () {
+    renderComments();
   };
 
-  // Прячем блоки счётчика комментариев и загрузки новых комментариев
-  var hideCommentCounter = function () {
-    document.querySelector('.social__comment-count').classList.add('hidden');
-  };
-
-  var hideCommentLoader = function () {
-    document.querySelector('.comments-loader').classList.add('hidden');
-  };
-
-  // Закрытие фото по esc
   var onDocumentKeydown = function (evt) {
     if (evt.key === 'Escape') {
       closeBigPicture();
     }
   };
 
-  // Закрытие большого фото
-  var closeBigPicture = function () {
-    bigPicture.classList.add('hidden');
-    body.classList.remove('modal-open');
-    document.removeEventListener('keydown', onDocumentKeydown);
+  var onBigPictureCancelClick = function () {
+    closeBigPicture();
   };
 
-  closeButton.addEventListener('click', function () {
-    closeBigPicture();
-  });
+  var closeBigPicture = function () {
+    renderedComments = 0;
+    bigPicture.classList.add('hidden');
+    commentsButton.removeEventListener('click', onCommentsButtonClick);
+    document.removeEventListener('keydown', onDocumentKeydown);
+    closeButton.removeEventListener('click', onBigPictureCancelClick);
+    body.classList.remove('modal-open');
+    if (commentsButton.classList.contains('hidden')) {
+      commentsButton.classList.remove('hidden');
+    }
+  };
 
-  closeButton.addEventListener('keydown', function () {
-    onDocumentKeydown();
-  });
+  var showBigPicture = function (image) {
+    comments = image.comments;
+    commentsContainer.innerHTML = '';
+    bigPictureImg.src = image.url;
+    likesCount.textContent = image.likes;
+    maxCommentsCount.textContent = image.comments.length;
+    socialCaption.textContent = image.description;
+    renderComments();
+    body.classList.add('modal-open');
+    bigPicture.classList.remove('hidden');
+    document.addEventListener('keydown', onDocumentKeydown);
+    closeButton.addEventListener('click', onBigPictureCancelClick);
+    commentsButton.addEventListener('click', onCommentsButtonClick);
+  };
 
   window.post = {
     showBigPicture: showBigPicture
   };
 
-  hideCommentCounter();
-  hideCommentLoader();
 })();

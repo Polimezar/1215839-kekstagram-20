@@ -1,38 +1,52 @@
 'use strict';
 
 (function () {
-  var MAX_HASHTAG_COUNT = 5;
-  var HASHTAG_PATTERN = /^#[a-zA-ZА-Яа-я0-9]{1,19}$/;
-  var hashtagsInput = document.querySelector('.text__hashtags');
+  var HASHTAGS_MAX_COUNT = 5;
+  var HASHTAG_REG_EXP = /^#([а-я]|[А-Я]|[a-zA-Z]|[0-9]){1,20}$/;
 
-  hashtagsInput.addEventListener('input', function () {
-    var hashtags = hashtagsInput.value.trim().toLowerCase().split(/\s{1,}/g);
-    var uniqueHashtags = [];
-    if (hashtags.length > MAX_HASHTAG_COUNT) {
-      hashtagsInput.setCustomValidity('Максимальное количество хештегов 5шт!');
-      return;
-    }
-    for (var i = 0; i < hashtags.length; i += 1) {
-      if (!hashtags[i].match(HASHTAG_PATTERN)) {
-        hashtagsInput.setCustomValidity('Хештег должен начинаться с решетки (#)\n' +
-          'Cтрока после решётки должна состоять только из букв и чисел и не может содержать пробелы.\n' +
-          'Длина хештега не должна превышать 20 символов.'
-        );
-        return;
-      }
-      if (!uniqueHashtags.includes(hashtags[i])) {
-        uniqueHashtags.push(hashtags[i]);
-      } else {
-        hashtagsInput.setCustomValidity('Хештеги не должны повторяться!');
-        return;
-      }
-    }
-    hashtagsInput.setCustomValidity('');
-  });
+  var USER_MESSAGE = {
+    LESS_THEN_FIVE: 'Нельзя указать больше пяти хэш-тегов',
+    NO_DUPLICATES: 'один и тот же хэш-тег не может быть использован дважды',
+    CORRECT: 'Не верный формат хештега'
+  };
 
-  hashtagsInput.addEventListener('keydown', function (evt) {
-    if (hashtagsInput === document.activeElement) {
-      evt.stopPropagation();
+  var inputHashtags = document.querySelector('.text__hashtags');
+
+  var onInputHashtagsKeyup = function () {
+    var hashtagsArr = inputHashtags.value.replace(/ +/g, ' ').trim().toLowerCase().split(' ');
+
+    var isHashtagsLessThanFive = hashtagsArr.length <= HASHTAGS_MAX_COUNT;
+
+    var isHashtagCorrect = hashtagsArr.every(function (item) {
+      return item === '' || HASHTAG_REG_EXP.test(item);
+    });
+
+    var isHastagsNoDuplicates = hashtagsArr.every(function (item, index, array) {
+      return array.indexOf(item) === index;
+    });
+
+    inputHashtags.setCustomValidity('');
+
+    if (!isHashtagsLessThanFive) {
+      inputHashtags.setCustomValidity(USER_MESSAGE.LESS_THEN_FIVE);
     }
-  });
+
+    if (!isHashtagCorrect) {
+      inputHashtags.setCustomValidity(USER_MESSAGE.CORRECT);
+    }
+
+    if (!isHastagsNoDuplicates) {
+      inputHashtags.setCustomValidity(USER_MESSAGE.NO_DUPLICATES);
+    }
+
+    if (isHashtagCorrect && isHastagsNoDuplicates && isHashtagsLessThanFive) {
+      inputHashtags.style.border = '';
+      inputHashtags.style.background = '';
+    } else {
+      inputHashtags.style.border = '2px solid red';
+      inputHashtags.style.background = 'pink';
+    }
+  };
+
+  inputHashtags.addEventListener('keyup', onInputHashtagsKeyup);
 })();

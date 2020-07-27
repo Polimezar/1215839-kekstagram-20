@@ -2,7 +2,6 @@
 
 (function () {
   var DEFAULT_EFFECT = 'none';
-  var DEFAULT_EFFECT_LEVEL = 100;
 
   var effectLevelPin = document.querySelector('.effect-level__pin');
   var effectLevelValue = document.querySelector('.effect-level__value');
@@ -26,7 +25,6 @@
       removePictureEffects();
       imagePreview.style.filter = null;
       selectedEffect = evt.target.value;
-      effectLevelValue.value = DEFAULT_EFFECT_LEVEL;
       effectLevelPin.style.left = 100 + '%';
       effectLevelDepth.style.width = 100 + '%';
       if (selectedEffect !== DEFAULT_EFFECT) {
@@ -66,13 +64,13 @@
     var positionX = effectLevelPin.offsetLeft;
     var lineWidth = effectLevelLine.offsetWidth;
     var percent = Math.round(100 * positionX / lineWidth);
+    effectLevelValue.value = percent;
     return percent;
   };
 
   var changeFilterValue = function () {
     var current = document.querySelector('.effects__radio:checked');
     var percent = getLevelPin();
-    effectLevelValue.value = DEFAULT_EFFECT_LEVEL;
     setFilterValue(current.value, percent);
   };
 

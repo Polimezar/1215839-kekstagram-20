@@ -32,6 +32,7 @@
     imagePreviewOverlay.classList.add('hidden');
     document.removeEventListener('keydown', onEditorKeydown);
     resetEditor();
+    form.reset();
   };
 
   var resetEditor = function () {
